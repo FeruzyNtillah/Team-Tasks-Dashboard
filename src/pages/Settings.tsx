@@ -11,19 +11,23 @@ const Settings: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-800 mb-4">Account Settings</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <input
+                  id="email"
                   type="email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   defaultValue="john.doe@techsavy.com"
+                  placeholder="Enter your email"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">Username</label>
                 <input
+                  id="username"
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   defaultValue="johndoe"
+                  placeholder="Enter your username"
                 />
               </div>
             </div>
@@ -37,7 +41,7 @@ const Settings: React.FC = () => {
                   <p className="font-medium text-gray-700">Email Notifications</p>
                   <p className="text-sm text-gray-500">Receive email updates about your projects</p>
                 </div>
-                <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600">
+                <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-blue-600" aria-label="Toggle email notifications">
                   <span className="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-6"></span>
                 </button>
               </div>
@@ -47,7 +51,7 @@ const Settings: React.FC = () => {
                   <p className="font-medium text-gray-700">Dark Mode</p>
                   <p className="text-sm text-gray-500">Use dark theme across the application</p>
                 </div>
-                <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200">
+                <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200" aria-label="Toggle dark mode">
                   <span className="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1"></span>
                 </button>
               </div>

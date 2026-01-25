@@ -9,7 +9,12 @@ const Tasks: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div className="flex items-center space-x-3">
-                <input type="checkbox" className="w-5 h-5 text-blue-600 rounded" />
+                <input 
+                  type="checkbox" 
+                  className="w-5 h-5 text-blue-600 rounded" 
+                  id="task-1"
+                  aria-label="Mark task as complete"
+                />
                 <div>
                   <h4 className="font-semibold text-gray-800">Design homepage mockup</h4>
                   <p className="text-sm text-gray-600">Create initial design concepts for the new homepage</p>
@@ -23,7 +28,12 @@ const Tasks: React.FC = () => {
             
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div className="flex items-center space-x-3">
-                <input type="checkbox" className="w-5 h-5 text-blue-600 rounded" />
+                <input 
+                  type="checkbox" 
+                  className="w-5 h-5 text-blue-600 rounded" 
+                  id="task-2"
+                  aria-label="Mark task as complete"
+                />
                 <div>
                   <h4 className="font-semibold text-gray-800">Review pull requests</h4>
                   <p className="text-sm text-gray-600">Code review for feature branch updates</p>
@@ -37,7 +47,14 @@ const Tasks: React.FC = () => {
             
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
               <div className="flex items-center space-x-3">
-                <input type="checkbox" checked className="w-5 h-5 text-blue-600 rounded" readOnly />
+                <input 
+                  type="checkbox" 
+                  checked 
+                  className="w-5 h-5 text-blue-600 rounded" 
+                  readOnly 
+                  id="task-3"
+                  aria-label="Task completed"
+                />
                 <div>
                   <h4 className="font-semibold text-gray-400 line-through">Update documentation</h4>
                   <p className="text-sm text-gray-400">Add new API endpoints to docs</p>

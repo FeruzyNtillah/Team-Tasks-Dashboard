@@ -135,8 +135,7 @@ const ProjectDetail: React.FC = () => {
             <p className="text-sm text-gray-500 mb-2">Progress Bar</p>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-blue-600 h-2 rounded-full"
-                style={{ width: `${project.progress}%` }}
+                className={`bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out w-[${project.progress}%]`}
               ></div>
             </div>
           </div>
