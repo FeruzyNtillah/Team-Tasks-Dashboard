@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+
+
+img, svg, video, canvas, audio, iframe, embed, object {
+  vertical-align: initial;
+}
