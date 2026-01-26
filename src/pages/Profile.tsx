@@ -24,6 +24,27 @@ const Profile: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  // Helper function to get signed URL for avatar
+  const getAvatarUrl = async (path: string | null) => {
+    if (!path) return null;
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .createSignedUrl(path, 60 * 60 * 24 * 365); // 1 year expiry
+
+      if (error) {
+        console.error('Error getting signed URL:', error);
+        return null;
+      }
+
+      return data.signedUrl;
+    } catch (err) {
+      console.error('Error:', err);
+      return null;
+    }
+  };
+
   const fetchProfile = useCallback(async () => {
     if (!user) return;
 
@@ -38,7 +59,6 @@ const Profile: React.FC = () => {
         // Profile doesn't exist, create it
         console.log('Profile not found, creating new profile...');
         
-        // Create profile directly here to avoid circular dependency
         try {
           const { error: insertError } = await supabase
             .from('users')
@@ -68,7 +88,14 @@ const Profile: React.FC = () => {
             } else {
               setProfile(newData);
               setFullName(newData.full_name || '');
-              setAvatarUrl(newData.avatar_url || '');
+              
+              // Get signed URL for avatar
+              if (newData.avatar_url) {
+                const signedUrl = await getAvatarUrl(newData.avatar_url);
+                setAvatarUrl(signedUrl || '');
+              } else {
+                setAvatarUrl('');
+              }
             }
           }
         } catch (err) {
@@ -84,7 +111,14 @@ const Profile: React.FC = () => {
       } else {
         setProfile(data);
         setFullName(data.full_name || '');
-        setAvatarUrl(data.avatar_url || '');
+        
+        // Get signed URL for avatar
+        if (data.avatar_url) {
+          const signedUrl = await getAvatarUrl(data.avatar_url);
+          setAvatarUrl(signedUrl || '');
+        } else {
+          setAvatarUrl('');
+        }
       }
     } catch (err) {
       console.error('Error:', err);
@@ -104,8 +138,8 @@ const Profile: React.FC = () => {
     if (!user) return null;
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const fileName = `avatar.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`;
 
     try {
       const { error: uploadError } = await supabase.storage
@@ -119,11 +153,8 @@ const Profile: React.FC = () => {
         return null;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
+      // Return the file path (not the URL)
+      return filePath;
     } catch (err) {
       console.error('Error uploading avatar:', err);
       return null;
@@ -151,13 +182,13 @@ const Profile: React.FC = () => {
     setMessage('');
 
     try {
-      let newAvatarUrl = avatarUrl;
+      let newAvatarPath = profile.avatar_url;
 
       // Upload new avatar if file is selected
       if (avatarFile) {
-        const uploadedUrl = await uploadAvatar(avatarFile);
-        if (uploadedUrl) {
-          newAvatarUrl = uploadedUrl;
+        const uploadedPath = await uploadAvatar(avatarFile);
+        if (uploadedPath) {
+          newAvatarPath = uploadedPath;
         } else {
           setError('Failed to upload avatar');
           setSaving(false);
@@ -165,12 +196,12 @@ const Profile: React.FC = () => {
         }
       }
 
-      // Update profile
+      // Update profile with the file path
       const { error: updateError } = await supabase
         .from('users')
         .update({
           full_name: fullName,
-          avatar_url: newAvatarUrl,
+          avatar_url: newAvatarPath,
         })
         .eq('id', user.id);
 
@@ -190,10 +221,18 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     setEditing(false);
     setFullName(profile?.full_name || '');
-    setAvatarUrl(profile?.avatar_url || '');
+    
+    // Restore original avatar URL
+    if (profile?.avatar_url) {
+      const signedUrl = await getAvatarUrl(profile.avatar_url);
+      setAvatarUrl(signedUrl || '');
+    } else {
+      setAvatarUrl('');
+    }
+    
     setAvatarFile(null);
     setError('');
     setMessage('');
