@@ -24,34 +24,6 @@ const Profile: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const createProfile = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: user.id,
-            full_name: user.user_metadata?.full_name || '',
-            email: user.email || '',
-            role: 'user'
-          }
-        ]);
-
-      if (error) {
-        console.error('Error creating profile:', error);
-        setError('Failed to create profile');
-      } else {
-        // Fetch the newly created profile
-        await fetchProfile();
-      }
-    } catch (err) {
-      console.error('Error creating profile:', err);
-      setError('Failed to create profile');
-    }
-  }, [user]);
-
   const fetchProfile = useCallback(async () => {
     if (!user) return;
 
@@ -65,7 +37,44 @@ const Profile: React.FC = () => {
       if (error && error.code === 'PGRST116') {
         // Profile doesn't exist, create it
         console.log('Profile not found, creating new profile...');
-        await createProfile();
+        
+        // Create profile directly here to avoid circular dependency
+        try {
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: user.id,
+                full_name: user.user_metadata?.full_name || '',
+                email: user.email || '',
+                role: 'user'
+              }
+            ]);
+
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+            setError('Failed to create profile');
+          } else {
+            // Fetch the newly created profile
+            const { data: newData, error: fetchError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+              
+            if (fetchError) {
+              console.error('Error fetching new profile:', fetchError);
+              setError('Failed to load profile');
+            } else {
+              setProfile(newData);
+              setFullName(newData.full_name || '');
+              setAvatarUrl(newData.avatar_url || '');
+            }
+          }
+        } catch (err) {
+          console.error('Error creating profile:', err);
+          setError('Failed to create profile');
+        }
         return;
       }
 
@@ -83,7 +92,7 @@ const Profile: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, createProfile]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
