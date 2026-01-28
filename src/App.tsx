@@ -12,14 +12,29 @@ import Tasks from './pages/Tasks';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 
+/**
+ * Main Application Component
+ * 
+ * This component defines the entire application routing structure and provides
+ * the authentication context to all child components.
+ * 
+ * Route Structure:
+ * - Public routes: /login, /signup, /forgot-password
+ * - Protected routes: All others wrapped in ProtectedRoute and Layout
+ * 
+ * The application uses React Router v7 with nested routing for the main layout.
+ */
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public authentication routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          
+          {/* Protected routes with main layout */}
           <Route path="/" element={
             <ProtectedRoute>
               <Layout />
