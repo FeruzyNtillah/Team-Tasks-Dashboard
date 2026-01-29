@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Eye, Edit2, Trash2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useProjectsRealtime } from '../hooks/useProjectsRealtime';
+import { useProjectsOptimized } from '../hooks/useProjectsOptimized';
 import type { Project } from '../types';
 
 const Projects: React.FC = () => {
@@ -29,7 +29,7 @@ const Projects: React.FC = () => {
     createProject,
     updateProject,
     deleteProject
-  } = useProjectsRealtime();
+  } = useProjectsOptimized();
 
   const handleCreateProject = async () => {
     if (!formData.name || !formData.description) {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Plus, X, Calendar, User, Edit2, Trash2, AlertCircle } from 'lucide-react';
-import { useTasksRealtime } from '../hooks/useTasksRealtime';
+import { useTasksOptimized } from '../hooks/useTasksOptimized';
 import { useProjectsData } from '../hooks/useProjectsData';
 import type { Task } from '../types';
 
@@ -40,7 +40,7 @@ const Tasks: React.FC = () => {
     createTask,
     updateTask,
     deleteTask
-  } = useTasksRealtime();
+  } = useTasksOptimized();
 
   const {
     projects,
