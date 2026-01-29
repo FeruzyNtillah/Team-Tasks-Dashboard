@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Role } from '../utils/permissions';
+import { useAuthorization } from '../hooks/useAuthorization';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -41,12 +42,16 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   fallback = null,
   requireAuth = false
 }) => {
-  // This would typically come from a context or hook
-  // For now, we'll assume it's passed as a prop or retrieved from context
-  const userRole = null; // TODO: Get from auth context
+  // Get user authorization from hook
+  const { userRole, loading: authLoading, isAuthenticated } = useAuthorization();
   
   // If authentication is required and user is not authenticated
-  if (requireAuth && !userRole) {
+  if (requireAuth && !isAuthenticated && !authLoading) {
+    return <>{fallback}</>;
+  }
+  
+  // If auth is still loading, show loading state or fallback
+  if (authLoading) {
     return <>{fallback}</>;
   }
   

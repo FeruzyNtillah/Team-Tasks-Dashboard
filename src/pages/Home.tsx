@@ -1,6 +1,21 @@
 import React from 'react';
+import { useTasksRealtime } from '../hooks/useTasksRealtime';
+import { useProjectsData } from '../hooks/useProjectsData';
+import { BarChart3, TrendingUp, Users, CheckCircle } from 'lucide-react';
 
 const Home: React.FC = () => {
+  const { tasks } = useTasksRealtime();
+  const { projects } = useProjectsData();
+  
+  // Calculate stats from real data
+  const totalProjects = projects.length;
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(task => task.status === 'completed').length;
+  const pendingTasks = tasks.filter(task => task.status === 'todo').length;
+  const inProgressTasks = tasks.filter(task => task.status === 'in_progress').length;
+  
+  // Get recent tasks (last 5)
+  const recentTasks = tasks.slice(0, 5);
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
@@ -8,87 +23,126 @@ const Home: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Projects</h3>
-          <p className="text-3xl font-bold text-blue-600">12</p>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-gray-700">Total Projects</h3>
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+          </div>
+          <p className="text-3xl font-bold text-blue-600">{totalProjects}</p>
           <p className="text-sm text-gray-500 mt-1">Active projects</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Total Tasks</h3>
-          <p className="text-3xl font-bold text-green-600">47</p>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-gray-700">Total Tasks</h3>
+            <CheckCircle className="w-5 h-5 text-green-600" />
+          </div>
+          <p className="text-3xl font-bold text-green-600">{totalTasks}</p>
           <p className="text-sm text-gray-500 mt-1">All tasks</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Completed</h3>
-          <p className="text-3xl font-bold text-purple-600">28</p>
-          <p className="text-sm text-gray-500 mt-1">Done this week</p>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-gray-700">In Progress</h3>
+            <TrendingUp className="w-5 h-5 text-purple-600" />
+          </div>
+          <p className="text-3xl font-bold text-purple-600">{inProgressTasks}</p>
+          <p className="text-sm text-gray-500 mt-1">Currently working</p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Pending</h3>
-          <p className="text-3xl font-bold text-orange-600">19</p>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-gray-700">Pending</h3>
+            <Users className="w-5 h-5 text-orange-600" />
+          </div>
+          <p className="text-3xl font-bold text-orange-600">{pendingTasks}</p>
           <p className="text-sm text-gray-500 mt-1">Awaiting action</p>
         </div>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart Placeholder */}
+        {/* Task Overview Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Task Overview</h3>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-300 rounded-lg mx-auto mb-3"></div>
-              <p className="text-gray-500">Chart Placeholder</p>
-              <p className="text-sm text-gray-400">Task completion trends</p>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Completed</span>
+              <span className="text-sm font-medium text-green-600">{completedTasks}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
+              ></div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">In Progress</span>
+              <span className="text-sm font-medium text-yellow-600">{inProgressTasks}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-yellow-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0}%` }}
+              ></div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Pending</span>
+              <span className="text-sm font-medium text-gray-600">{pendingTasks}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-gray-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${totalTasks > 0 ? (pendingTasks / totalTasks) * 100 : 0}%` }}
+              ></div>
             </div>
           </div>
         </div>
         
-        {/* Recent Tasks Placeholder */}
+        {/* Recent Tasks */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Recent Tasks</h3>
-          <div className="space-y-3">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-800">Design homepage mockup</p>
-                  <p className="text-sm text-gray-500">Due in 2 days</p>
-                </div>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">In Progress</span>
-              </div>
+          {recentTasks.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No tasks found</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Tasks will appear here once they are created
+              </p>
             </div>
-            
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-800">Review pull requests</p>
-                  <p className="text-sm text-gray-500">Due tomorrow</p>
+          ) : (
+            <div className="space-y-3">
+              {recentTasks.map((task) => (
+                <div key={task.id} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{task.title}</p>
+                      <p className="text-sm text-gray-500">
+                        {task.due_date 
+                          ? `Due ${new Date(task.due_date).toLocaleDateString()}`
+                          : 'No due date'
+                        }
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded ${
+                      task.status === 'completed' ? 'bg-green-100 text-green-700' :
+                      task.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
+                      task.priority === 'urgent' ? 'bg-red-100 text-red-700' :
+                      task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {task.status === 'completed' ? 'Completed' :
+                       task.status === 'in_progress' ? 'In Progress' :
+                       task.priority === 'urgent' ? 'Urgent' :
+                       task.priority === 'high' ? 'High Priority' :
+                       task.status.replace('_', ' ')
+                      }
+                    </span>
+                  </div>
                 </div>
-                <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">High Priority</span>
-              </div>
+              ))}
             </div>
-            
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-800">Update documentation</p>
-                  <p className="text-sm text-gray-500">Completed</p>
-                </div>
-                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Completed</span>
-              </div>
-            </div>
-            
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-800">Team meeting preparation</p>
-                  <p className="text-sm text-gray-500">Due in 3 days</p>
-                </div>
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Medium Priority</span>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

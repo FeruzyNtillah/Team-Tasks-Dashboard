@@ -1,69 +1,66 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, User, CheckSquare } from 'lucide-react';
+import { ArrowLeft, Calendar, User, CheckSquare, AlertCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase.client';
+import { useAuth } from '../contexts/AuthContext';
+import type { Project, Task } from '../types';
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const [project, setProject] = useState<Project | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Static project data
-  const project = {
-    id: parseInt(id || '1'),
-    name: 'Website Redesign',
-    description: 'Complete overhaul of the company website with modern design principles and improved user experience.',
-    created_at: '2024-01-15',
-    status: 'In Progress',
-    team_lead: 'John Doe',
-    progress: 65
-  };
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!id || !user) return;
 
-  // Static tasks data
-  const tasks = [
-    {
-      id: 1,
-      title: 'Design homepage mockup',
-      description: 'Create initial design concepts for the new homepage layout',
-      status: 'In Progress',
-      priority: 'High',
-      assignee: 'Alice Johnson',
-      due_date: '2024-02-01'
-    },
-    {
-      id: 2,
-      title: 'Implement responsive design',
-      description: 'Ensure the website works perfectly on all device sizes',
-      status: 'Pending',
-      priority: 'Medium',
-      assignee: 'Bob Smith',
-      due_date: '2024-02-05'
-    },
-    {
-      id: 3,
-      title: 'Optimize page load speed',
-      description: 'Improve website performance and loading times',
-      status: 'Completed',
-      priority: 'High',
-      assignee: 'Carol White',
-      due_date: '2024-01-20'
-    },
-    {
-      id: 4,
-      title: 'Set up analytics tracking',
-      description: 'Implement Google Analytics and other tracking tools',
-      status: 'Pending',
-      priority: 'Low',
-      assignee: 'David Brown',
-      due_date: '2024-02-10'
-    }
-  ];
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch project details
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (projectError) throw projectError;
+        setProject(projectData);
+
+        // Fetch project tasks
+        const { data: tasksData, error: tasksError } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('project_id', id)
+          .order('created_at', { ascending: false });
+
+        if (tasksError) throw tasksError;
+        setTasks(tasksData || []);
+      } catch (err) {
+        console.error('Error fetching project data:', err);
+        setError('Failed to load project data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [id, user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed':
+      case 'completed':
         return 'bg-green-100 text-green-700';
-      case 'In Progress':
+      case 'in_progress':
         return 'bg-yellow-100 text-yellow-700';
-      case 'Pending':
+      case 'todo':
         return 'bg-gray-100 text-gray-700';
+      case 'review':
+        return 'bg-blue-100 text-blue-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
@@ -71,16 +68,35 @@ const ProjectDetail: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'High':
+      case 'urgent':
         return 'bg-red-100 text-red-700';
-      case 'Medium':
+      case 'high':
+        return 'bg-orange-100 text-orange-700';
+      case 'medium':
         return 'bg-blue-100 text-blue-700';
-      case 'Low':
+      case 'low':
         return 'bg-gray-100 text-gray-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-600">{error || 'Project not found'}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -106,37 +122,30 @@ const ProjectDetail: React.FC = () => {
         </div>
 
         {/* Project Info Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           <div className="flex items-center space-x-3">
             <Calendar className="w-5 h-5 text-gray-400" />
             <div>
               <p className="text-sm text-gray-500">Created</p>
-              <p className="font-medium text-gray-800">{project.created_at}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <User className="w-5 h-5 text-gray-400" />
-            <div>
-              <p className="text-sm text-gray-500">Team Lead</p>
-              <p className="font-medium text-gray-800">{project.team_lead}</p>
+              <p className="font-medium text-gray-800">
+                {new Date(project.created_at).toLocaleDateString()}
+              </p>
             </div>
           </div>
           
           <div className="flex items-center space-x-3">
             <CheckSquare className="w-5 h-5 text-gray-400" />
             <div>
-              <p className="text-sm text-gray-500">Progress</p>
-              <p className="font-medium text-gray-800">{project.progress}%</p>
+              <p className="text-sm text-gray-500">Total Tasks</p>
+              <p className="font-medium text-gray-800">{tasks.length}</p>
             </div>
           </div>
           
-          <div>
-            <p className="text-sm text-gray-500 mb-2">Progress Bar</p>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out w-[${project.progress}%]`}
-              ></div>
+          <div className="flex items-center space-x-3">
+            <User className="w-5 h-5 text-gray-400" />
+            <div>
+              <p className="text-sm text-gray-500">Status</p>
+              <p className="font-medium text-gray-800 capitalize">{project.status}</p>
             </div>
           </div>
         </div>
@@ -150,38 +159,54 @@ const ProjectDetail: React.FC = () => {
         </div>
         
         <div className="p-6">
-          <div className="space-y-4">
-            {tasks.map((task) => (
-              <div key={task.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 mb-1">{task.title}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{task.description}</p>
-                    
-                    <div className="flex items-center space-x-4 text-sm">
-                      <div className="flex items-center space-x-1">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600">{task.assignee}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600">{task.due_date}</span>
+          {tasks.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No tasks found for this project</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Tasks will appear here once they are created
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {tasks.map((task) => (
+                <div key={task.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800 mb-1">{task.title}</h3>
+                      <p className="text-sm text-gray-600 mb-3">{task.description}</p>
+                      
+                      <div className="flex items-center space-x-4 text-sm">
+                        {task.assigned_to && (
+                          <div className="flex items-center space-x-1">
+                            <User className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">{task.assigned_to}</span>
+                          </div>
+                        )}
+                        {task.due_date && (
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">
+                              {new Date(task.due_date).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex flex-col items-end space-y-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(task.status)}`}>
-                      {task.status}
-                    </span>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                      {task.priority}
-                    </span>
+                    
+                    <div className="flex flex-col items-end space-y-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(task.status)}`}>
+                        {task.status.replace('_', ' ')}
+                      </span>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                        {task.priority}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

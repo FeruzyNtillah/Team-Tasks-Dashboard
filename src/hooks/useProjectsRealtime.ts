@@ -38,7 +38,7 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
   const [userRole, setUserRole] = useState<'admin' | 'member' | null>(null);
 
   /**
-   * Fetch user role from profiles table
+   * Fetch user role from users table
    */
   const fetchUserRole = useCallback(async () => {
     if (!user) {
@@ -47,6 +47,8 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
     }
 
     try {
+      console.log('Fetching user role for:', user.id);
+      
       const { data, error } = await supabase
         .from('users')
         .select('role')
@@ -55,35 +57,53 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
 
       if (error) {
         console.error('Error fetching user role:', error);
-        // If user profile doesn't exist, create one
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
+        // If user not found, create one with admin role
         if (error.code === 'PGRST116') {
           console.log('User profile not found, creating one...');
-          const { data: newProfile, error: createError } = await supabase
+          const { data: newUser, error: createError } = await supabase
             .from('users')
             .insert({
               id: user.id,
               email: user.email || '',
-              full_name: user.user_metadata?.full_name || 'User',
-              role: 'admin' // Make first user admin - change this logic as needed
+              full_name: user.user_metadata?.full_name || user.email || 'User',
+              role: 'admin' // First user gets admin
             })
             .select('role')
             .single();
           
           if (createError) {
             console.error('Error creating user profile:', createError);
-            setError('Failed to set up user profile');
-          } else if (newProfile) {
-            setUserRole(newProfile.role as 'admin' | 'member');
+            console.error('Create error details:', {
+              code: createError.code,
+              message: createError.message,
+              details: createError.details,
+              hint: createError.hint
+            });
+            setError(`Failed to set up user profile: ${createError.message}`);
+          } else if (newUser) {
+            console.log('User profile created successfully with role:', newUser.role);
+            setUserRole(newUser.role as 'admin' | 'member');
           }
         } else {
-          setError('Failed to fetch user permissions');
+          setError(`Failed to fetch user permissions: ${error.message} (Code: ${error.code})`);
         }
-      } else {
+      } else if (data) {
+        console.log('User role fetched successfully:', data.role);
         setUserRole(data.role as 'admin' | 'member');
+      } else {
+        console.warn('No data returned from users query');
+        setError('No user profile found');
       }
     } catch (err) {
-      console.error('Error fetching user role:', err);
-      setError('Failed to fetch user permissions');
+      console.error('Unexpected error fetching user role:', err);
+      setError(`Failed to fetch user permissions: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   }, [user]);
 
@@ -101,12 +121,18 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
       setLoading(true);
       setError(null);
 
+      console.log('Fetching projects...');
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching projects:', error);
+        throw error;
+      }
+      
+      console.log('Projects fetched successfully:', data?.length || 0, 'projects');
       setProjects(data || []);
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -136,19 +162,36 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
   const createProject = useCallback(async (
     projectData: Omit<Project, 'id' | 'created_at' | 'updated_at'>
   ): Promise<Project> => {
-    if (!canCreateProject) {
-      throw new Error('Insufficient permissions to create projects');
-    }
+    console.log('=== CREATE PROJECT DEBUG ===');
+    console.log('1. Project data received:', projectData);
+    console.log('2. User role:', userRole);
+    console.log('3. Can create project:', userRole === 'admin');
+    console.log('4. User authenticated:', !!user);
+    console.log('5. User ID:', user?.id);
 
     if (!user) {
-      throw new Error('User not authenticated');
+      const errorMsg = 'User not authenticated';
+      console.error('ERROR:', errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    if (userRole !== 'admin') {
+      const errorMsg = `Insufficient permissions to create projects. Current role: ${userRole}`;
+      console.error('ERROR:', errorMsg);
+      throw new Error(errorMsg);
     }
 
     try {
       const projectToCreate = {
-        ...projectData,
+        name: projectData.name,
+        description: projectData.description,
+        status: projectData.status,
         created_by: user.id,
+        team_members: projectData.team_members || []
       };
+
+      console.log('6. Final project data to insert:', projectToCreate);
+      console.log('7. Making Supabase insert call...');
 
       const { data, error } = await supabase
         .from('projects')
@@ -156,13 +199,37 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('8. Supabase insert error:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw new Error(`Database error: ${error.message} (${error.code})`);
+      }
+
+      if (!data) {
+        console.error('9. No data returned from insert');
+        throw new Error('No data returned from database after insert');
+      }
+
+      console.log('10. Project created successfully:', data);
       return data;
     } catch (err) {
-      console.error('Error creating project:', err);
-      throw new Error('Failed to create project');
+      console.error('11. Error creating project:', err);
+      
+      if (err instanceof Error) {
+        console.error('Error name:', err.name);
+        console.error('Error message:', err.message);
+        console.error('Error stack:', err.stack);
+        throw err;
+      }
+      
+      throw new Error(`Failed to create project: ${String(err)}`);
     }
-  }, [canCreateProject, user]);
+  }, [userRole, user]);
 
   /**
    * Update project (admin only)
@@ -183,10 +250,21 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating project:', error);
+        throw new Error(`Database error: ${error.message} (${error.code})`);
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from database after update');
+      }
+      
       return data;
     } catch (err) {
       console.error('Error updating project:', err);
+      if (err instanceof Error) {
+        throw err;
+      }
       throw new Error('Failed to update project');
     }
   }, [canEditProject]);
@@ -205,9 +283,15 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
         .delete()
         .eq('id', projectId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting project:', error);
+        throw new Error(`Database error: ${error.message} (${error.code})`);
+      }
     } catch (err) {
       console.error('Error deleting project:', err);
+      if (err instanceof Error) {
+        throw err;
+      }
       throw new Error('Failed to delete project');
     }
   }, [canDeleteProject]);
@@ -225,6 +309,7 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
   useEffect(() => {
     if (!user) return;
 
+    console.log('Setting up realtime subscription for projects...');
     const channel = supabase
       .channel('projects_changes')
       .on(
@@ -256,9 +341,12 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up realtime subscription...');
       supabase.removeChannel(channel);
     };
   }, [user]);
@@ -268,9 +356,11 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
    */
   useEffect(() => {
     if (user) {
+      console.log('User authenticated, fetching role and projects...');
       fetchUserRole();
       fetchProjects();
     } else {
+      console.log('No user, clearing data...');
       setProjects([]);
       setUserRole(null);
       setLoading(false);

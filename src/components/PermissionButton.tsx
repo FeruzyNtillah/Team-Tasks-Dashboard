@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from './Button';
 import type { Role } from '../utils/permissions';
+import { useAuthorization } from '../hooks/useAuthorization';
 
 interface PermissionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
@@ -50,11 +51,16 @@ export const PermissionButton: React.FC<PermissionButtonProps> = ({
   disabled = false,
   ...buttonProps
 }) => {
-  // This would typically come from a context or hook
-  const userRole = null; // TODO: Get from auth context
+  // Get user authorization from hook
+  const { userRole, loading: authLoading } = useAuthorization();
   
   // Check if user is authorized
   const isAuthorized = React.useMemo(() => {
+    // If auth is still loading, don't authorize yet
+    if (authLoading) {
+      return false;
+    }
+    
     // If explicit permission is provided, use that
     if (hasPermission !== undefined) {
       return hasPermission;
@@ -71,10 +77,10 @@ export const PermissionButton: React.FC<PermissionButtonProps> = ({
     }
     
     return true;
-  }, [hasPermission, allowedRoles, forbiddenRoles, userRole]);
+  }, [hasPermission, allowedRoles, forbiddenRoles, userRole, authLoading]);
   
-  // If not authorized, show fallback
-  if (!isAuthorized) {
+  // If not authorized or auth is loading, show fallback
+  if (!isAuthorized || authLoading) {
     return <>{fallback}</>;
   }
   
