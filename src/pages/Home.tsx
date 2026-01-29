@@ -1,11 +1,21 @@
 import React from 'react';
 import { useTasksRealtime } from '../hooks/useTasksRealtime';
 import { useProjectsData } from '../hooks/useProjectsData';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { BarChart3, TrendingUp, Users, CheckCircle } from 'lucide-react';
 
 const Home: React.FC = () => {
   const { tasks } = useTasksRealtime();
   const { projects } = useProjectsData();
+  const { profile, loading } = useUserProfile();
+  
+  // Extract first name from full name
+  const getFirstName = (fullName: string | null | undefined): string => {
+    if (!fullName) return 'User';
+    return fullName.split(' ')[0];
+  };
+  
+  const firstName = getFirstName(profile?.full_name);
   
   // Calculate stats from real data
   const totalProjects = projects.length;
@@ -18,7 +28,11 @@ const Home: React.FC = () => {
   const recentTasks = tasks.slice(0, 5);
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {loading ? 'Loading...' : `Hey ${firstName}, welcome to our dashboard`}
+        </h2>
+      </div>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
