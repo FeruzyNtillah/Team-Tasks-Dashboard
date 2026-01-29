@@ -79,9 +79,41 @@ export const useUserProfile = () => {
 
       if (error) {
         console.error('Error fetching profile:', error);
-        setError('Failed to load profile');
-        setProfile(null);
-        setAvatarUrl('');
+        
+        // If user profile doesn't exist, create one
+        if (error.code === 'PGRST116') {
+          console.log('User profile not found, creating one...');
+          const { data: newProfile, error: createError } = await supabase
+            .from('users')
+            .insert({
+              id: user.id,
+              email: user.email || '',
+              full_name: user.user_metadata?.full_name || 'User',
+              role: 'admin' // Make first user admin
+            })
+            .select('*')
+            .single();
+          
+          if (createError) {
+            console.error('Error creating user profile:', createError);
+            setError('Failed to set up user profile');
+            setProfile(null);
+            setAvatarUrl('');
+          } else if (newProfile) {
+            setProfile(newProfile);
+            // Get signed URL for avatar if it exists
+            if (newProfile.avatar_url) {
+              const signedUrl = await getAvatarUrl(newProfile.avatar_url);
+              setAvatarUrl(signedUrl || '');
+            } else {
+              setAvatarUrl('');
+            }
+          }
+        } else {
+          setError('Failed to load profile');
+          setProfile(null);
+          setAvatarUrl('');
+        }
       } else {
         setProfile(data);
         
@@ -96,6 +128,8 @@ export const useUserProfile = () => {
     } catch (err) {
       console.error('Error in fetchProfile:', err);
       setError('An unexpected error occurred');
+      setProfile(null);
+      setAvatarUrl('');
     } finally {
       setLoading(false);
     }

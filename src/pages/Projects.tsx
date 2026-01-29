@@ -1,127 +1,267 @@
 import React, { useState } from 'react';
-import { Plus, Eye } from 'lucide-react';
+import { Plus, Eye, Edit2, Trash2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-interface Project {
-  id: number;
-  name: string;
-  description: string;
-  created_at: string;
-}
+import { useProjectsRealtime } from '../hooks/useProjectsRealtime';
+import type { Project } from '../types';
 
 const Projects: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: 1,
-      name: 'Website Redesign',
-      description: 'Complete overhaul of the company website with modern design principles',
-      created_at: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'Mobile App Development',
-      description: 'Native mobile application for iOS and Android platforms',
-      created_at: '2024-01-10'
-    },
-    {
-      id: 3,
-      name: 'API Integration',
-      description: 'Third-party API integration for enhanced functionality',
-      created_at: '2024-01-05'
-    },
-    {
-      id: 4,
-      name: 'Database Migration',
-      description: 'Migrate legacy database to modern cloud-based solution',
-      created_at: '2024-01-01'
-    }
-  ]);
-
-  const [newProject, setNewProject] = useState({
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    status: 'active' | 'completed' | 'archived';
+  }>({
     name: '',
-    description: ''
+    description: '',
+    status: 'active'
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleCreateProject = () => {
-    if (newProject.name && newProject.description) {
-      const project: Project = {
-        id: projects.length + 1,
-        name: newProject.name,
-        description: newProject.description,
-        created_at: new Date().toISOString().split('T')[0]
-      };
-      setProjects([...projects, project]);
-      setNewProject({ name: '', description: '' });
-      setShowCreateModal(false);
+  const {
+    projects,
+    loading: projectsLoading,
+    error: projectsError,
+    canCreateProject,
+    canEditProject,
+    canDeleteProject,
+    createProject,
+    updateProject,
+    deleteProject
+  } = useProjectsRealtime();
+
+  const handleCreateProject = async () => {
+    if (!formData.name || !formData.description) {
+      setError('Please fill in all fields');
+      return;
     }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await createProject({
+        name: formData.name,
+        description: formData.description,
+        status: formData.status,
+        created_by: '', // Will be set by the hook
+        team_members: []
+      });
+      
+      setFormData({ name: '', description: '', status: 'active' });
+      setShowCreateModal(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    setFormData({
+      name: project.name,
+      description: project.description || '',
+      status: project.status || 'active'
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleUpdateProject = async () => {
+    if (!editingProject || !formData.name || !formData.description) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await updateProject(editingProject.id, {
+        name: formData.name,
+        description: formData.description,
+        status: formData.status
+      });
+      
+      setFormData({ name: '', description: '', status: 'active' });
+      setEditingProject(null);
+      setShowCreateModal(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (!window.confirm('Are you sure you want to delete this project?')) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await deleteProject(projectId);
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete project');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ name: '', description: '', status: 'active' });
+    setEditingProject(null);
+    setError(null);
+    setShowCreateModal(false);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold text-gray-800">Projects</h2>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Create Project</span>
-        </button>
+        {canCreateProject && (
+          <button
+            onClick={() => {
+              setEditingProject(null);
+              setFormData({ name: '', description: '', status: 'active' });
+              setShowCreateModal(true);
+            }}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Create Project</span>
+          </button>
+        )}
       </div>
+
+      {/* Error Display */}
+      {(error || projectsError) && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <span className="text-red-800">{error || projectsError}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {projectsLoading && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      )}
 
       {/* Projects Data Grid */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created At
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {projects.map((project) => (
-                <tr key={project.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{project.name}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500 max-w-md truncate">{project.description}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{project.created_at}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link 
-                      to={`/projects/${project.id}`}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                  </td>
+      {!projectsLoading && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Description
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created At
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {projects.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      No projects found. {canCreateProject && 'Create your first project to get started.'}
+                    </td>
+                  </tr>
+                ) : (
+                  projects.map((project) => (
+                    <tr key={project.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{project.name}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500 max-w-md truncate">{project.description}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          project.status === 'active' ? 'bg-green-100 text-green-800' :
+                          project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {project.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">
+                          {new Date(project.created_at).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          <Link 
+                            to={`/projects/${project.id}`}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="View Project"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                          {canEditProject() && (
+                            <button
+                              onClick={() => handleEditProject(project)}
+                              className="text-gray-600 hover:text-gray-900"
+                              title="Edit Project"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          )}
+                          {canDeleteProject() && (
+                            <button
+                              onClick={() => handleDeleteProject(project.id)}
+                              className="text-red-600 hover:text-red-900"
+                              title="Delete Project"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Create Project Modal */}
+      {/* Create/Edit Project Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Create New Project</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              {editingProject ? 'Edit Project' : 'Create New Project'}
+            </h3>
+            
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 text-red-600" />
+                  <span className="text-red-800 text-sm">{error}</span>
+                </div>
+              </div>
+            )}
             
             <div className="space-y-4">
               <div>
@@ -130,10 +270,11 @@ const Projects: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={newProject.name}
-                  onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter project name"
+                  disabled={loading}
                 />
               </div>
               
@@ -142,27 +283,47 @@ const Projects: React.FC = () => {
                   Description
                 </label>
                 <textarea
-                  value={newProject.description}
-                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
                   placeholder="Enter project description"
+                  disabled={loading}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'completed' | 'archived' })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={loading}
+                >
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="archived">Archived</option>
+                </select>
               </div>
             </div>
             
             <div className="flex justify-end space-x-3 mt-6">
               <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                onClick={resetForm}
+                disabled={loading}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
-                onClick={handleCreateProject}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={editingProject ? handleUpdateProject : handleCreateProject}
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
-                Create Project
+                {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
+                <span>{editingProject ? 'Update Project' : 'Create Project'}</span>
               </button>
             </div>
           </div>

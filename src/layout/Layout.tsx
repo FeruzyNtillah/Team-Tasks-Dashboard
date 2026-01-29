@@ -1,8 +1,8 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSessionManager } from '../hooks/useSessionManager';
-import TopBar from './TopBar';
-import Sidebar from './Sidebar';
+import TopBar from './topbar';
+import Sidebar from './sidebar';
 
 /**
  * Main Layout Component

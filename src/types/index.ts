@@ -23,9 +23,22 @@ export interface UserProfile {
   id: string;
   email: string;
   full_name: string;
+  role: 'admin' | 'member';
   avatar_url?: string;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * Application user types (for dropdowns and assignments)
+ * Note: This extends the Supabase User type with additional fields
+ */
+export interface AppUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role?: 'admin' | 'member';
+  avatar_url?: string;
 }
 
 /**
