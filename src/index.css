@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
-
-
 img, svg, video, canvas, audio, iframe, embed, object {
   vertical-align: initial;
+}
+
+.progress-bar {
+  transition: width 0.3s ease-in-out;
+  width: var(--width, 0%);
 }

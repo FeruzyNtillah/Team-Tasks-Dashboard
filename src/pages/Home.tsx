@@ -9,6 +9,21 @@ const Home: React.FC = () => {
   const { projects } = useProjectsData();
   const { profile, loading } = useUserProfile();
   
+  // Helper function to generate Tailwind width class
+  const getWidthClass = (percentage: number) => {
+    if (percentage === 0) return 'w-0';
+    if (percentage <= 10) return 'w-[10%]';
+    if (percentage <= 20) return 'w-[20%]';
+    if (percentage <= 30) return 'w-[30%]';
+    if (percentage <= 40) return 'w-[40%]';
+    if (percentage <= 50) return 'w-[50%]';
+    if (percentage <= 60) return 'w-[60%]';
+    if (percentage <= 70) return 'w-[70%]';
+    if (percentage <= 80) return 'w-[80%]';
+    if (percentage <= 90) return 'w-[90%]';
+    return 'w-full';
+  };
+  
   // Extract first name from full name
   const getFirstName = (fullName: string | null | undefined): string => {
     if (!fullName) return 'User';
@@ -84,8 +99,7 @@ const Home: React.FC = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0}%` }}
+                className={`bg-green-600 h-2 rounded-full transition-all duration-300 ${getWidthClass(totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0)}`}
               ></div>
             </div>
             
@@ -95,8 +109,7 @@ const Home: React.FC = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-yellow-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0}%` }}
+                className={`bg-yellow-600 h-2 rounded-full transition-all duration-300 ${getWidthClass(totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0)}`}
               ></div>
             </div>
             
@@ -106,8 +119,7 @@ const Home: React.FC = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-gray-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${totalTasks > 0 ? (pendingTasks / totalTasks) * 100 : 0}%` }}
+                className={`bg-gray-600 h-2 rounded-full transition-all duration-300 ${getWidthClass(totalTasks > 0 ? (pendingTasks / totalTasks) * 100 : 0)}`}
               ></div>
             </div>
           </div>
