@@ -51,8 +51,8 @@ const Projects: React.FC = () => {
       
       setFormData({ name: '', description: '', status: 'active' });
       setShowCreateModal(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create project');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create project');
     } finally {
       setLoading(false);
     }
@@ -87,8 +87,8 @@ const Projects: React.FC = () => {
       setFormData({ name: '', description: '', status: 'active' });
       setEditingProject(null);
       setShowCreateModal(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to update project');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update project');
     } finally {
       setLoading(false);
     }
@@ -104,8 +104,8 @@ const Projects: React.FC = () => {
 
     try {
       await deleteProject(projectId);
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete project');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete project');
     } finally {
       setLoading(false);
     }
