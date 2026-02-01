@@ -23,7 +23,7 @@ import { useUserProfile } from '../hooks/useUserProfile';
 const Topbar: React.FC = () => {
   const { user } = useAuth();
   const { clearSession } = useSessionManager();
-  const { avatarUrl, loading } = useUserProfile();
+  const { avatarUrl, loading, profile } = useUserProfile();
   const navigate = useNavigate();
 
   /**
@@ -57,13 +57,27 @@ const Topbar: React.FC = () => {
    * @returns string - User initials (max 2 characters)
    */
   const getUserInitials = (): string => {
-    if (!user?.email) return 'U';
+    // Try to get initials from profile full_name first
+    if (profile?.full_name) {
+      const names = profile.full_name.trim().split(' ');
+      if (names.length >= 2) {
+        // First letter of first and last name
+        return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+      } else if (names.length === 1) {
+        // First two letters of single name
+        return names[0].substring(0, 2).toUpperCase();
+      }
+    }
     
-    const email = user.email;
-    const [name] = email.split('@');
+    // Fallback to email if no profile name
+    if (user?.email) {
+      const email = user.email;
+      const [name] = email.split('@');
+      return name.substring(0, 2).toUpperCase();
+    }
     
-    // Return first two characters of the name part
-    return name.substring(0, 2).toUpperCase();
+    // Final fallback
+    return 'U';
   };
 
   return (
@@ -120,11 +134,12 @@ const Topbar: React.FC = () => {
           {/* Sign Out Button */}
           <button 
             onClick={handleSignOut}
-            className="p-2 rounded-lg hover:bg-red-50 transition-colors group" 
+            className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors group" 
             aria-label="Sign Out"
             title="Sign Out"
           >
             <LogOut className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
+            <span className="text-gray-600 group-hover:text-red-600 text-sm font-medium">Log Out</span>
           </button>
         </div>
       </div>
