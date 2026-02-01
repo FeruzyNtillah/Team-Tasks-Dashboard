@@ -159,8 +159,8 @@ const Tasks: React.FC = () => {
       }
       
       handleCloseModal();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save task');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save task');
     } finally {
       setLoading(false);
     }
@@ -176,8 +176,8 @@ const Tasks: React.FC = () => {
 
     try {
       await deleteTask(taskId);
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete task');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete task');
     } finally {
       setLoading(false);
     }
