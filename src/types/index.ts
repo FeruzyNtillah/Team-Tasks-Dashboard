@@ -70,6 +70,7 @@ export interface Task {
   created_at: string;
   updated_at: string;
   due_date?: string;
+  attachment_url?: string;
 }
 
 /**

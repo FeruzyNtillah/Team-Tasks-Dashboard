@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, X, Calendar, User, Edit2, Trash2, AlertCircle } from 'lucide-react';
-import { useTasksOptimized } from '../hooks/useTasksOptimized';
+import { Search, Plus, X, Calendar, User, Edit2, Trash2, AlertCircle, Paperclip } from 'lucide-react';
+import { useTasksRealtime } from '../hooks/useTasksRealtime';
 import { useProjectsData } from '../hooks/useProjectsData';
+import { fileUploadService } from '../services/fileUpload';
 import type { Task } from '../types';
 
 const Tasks: React.FC = () => {
@@ -20,6 +21,7 @@ const Tasks: React.FC = () => {
     assigned_to: string;
     project_id: string;
     due_date?: string;
+    attachment_url?: string;
   }>({
     title: '',
     description: '',
@@ -27,20 +29,25 @@ const Tasks: React.FC = () => {
     priority: 'medium',
     assigned_to: '',
     project_id: '',
-    due_date: ''
+    due_date: '',
+    attachment_url: ''
   });
+  
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   const {
     tasks,
     loading: tasksLoading,
     error: tasksError,
+    userId,
     canCreateTask,
     canEditTask,
     canDeleteTask,
     createTask,
     updateTask,
     deleteTask
-  } = useTasksOptimized();
+  } = useTasksRealtime();
 
   const {
     projects,
@@ -90,7 +97,8 @@ const Tasks: React.FC = () => {
         priority: task.priority,
         assigned_to: task.assigned_to || '',
         project_id: task.project_id,
-        due_date: task.due_date || ''
+        due_date: task.due_date || '',
+        attachment_url: task.attachment_url || ''
       });
     } else {
       setEditingTask(null);
@@ -112,6 +120,8 @@ const Tasks: React.FC = () => {
     setIsModalOpen(false);
     setEditingTask(null);
     setError(null);
+    setSelectedFile(null);
+    setUploadingFile(false);
     setFormData({
       title: '',
       description: '',
@@ -119,8 +129,28 @@ const Tasks: React.FC = () => {
       priority: 'medium',
       assigned_to: '',
       project_id: '',
-      due_date: ''
+      due_date: '',
+      attachment_url: ''
     });
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        fileUploadService.validateFile(file);
+        setSelectedFile(file);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Invalid file');
+        setSelectedFile(null);
+      }
+    }
+  };
+
+  const handleFileRemove = () => {
+    setSelectedFile(null);
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -135,6 +165,21 @@ const Tasks: React.FC = () => {
     setError(null);
 
     try {
+      let attachmentUrl = formData.attachment_url;
+      
+      // Upload new file if selected
+      if (selectedFile && userId) {
+        setUploadingFile(true);
+        try {
+          const uploadResult = await fileUploadService.uploadFile(selectedFile, userId);
+          attachmentUrl = uploadResult.url;
+        } catch (uploadErr) {
+          throw new Error(uploadErr instanceof Error ? uploadErr.message : 'File upload failed');
+        } finally {
+          setUploadingFile(false);
+        }
+      }
+
       if (editingTask) {
         await updateTask(editingTask.id, {
           title: formData.title,
@@ -143,7 +188,8 @@ const Tasks: React.FC = () => {
           priority: formData.priority,
           assigned_to: formData.assigned_to || undefined,
           project_id: formData.project_id,
-          due_date: formData.due_date || undefined
+          due_date: formData.due_date || undefined,
+          attachment_url: attachmentUrl
         });
       } else {
         await createTask({
@@ -154,7 +200,8 @@ const Tasks: React.FC = () => {
           assigned_to: formData.assigned_to || undefined,
           project_id: formData.project_id,
           created_by: '', // Will be set by the hook
-          due_date: formData.due_date || undefined
+          due_date: formData.due_date || undefined,
+          attachment_url: attachmentUrl
         });
       }
       
@@ -286,6 +333,9 @@ const Tasks: React.FC = () => {
                     Due Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Attachment
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -293,7 +343,7 @@ const Tasks: React.FC = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTasks.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       No tasks found. {canCreateTask && 'Create your first task to get started.'}
                     </td>
                   </tr>
@@ -327,6 +377,22 @@ const Tasks: React.FC = () => {
                           <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                           {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {task.attachment_url ? (
+                          <a
+                            href={task.attachment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-blue-600 hover:text-blue-800"
+                            title="View attachment"
+                          >
+                            <Paperclip className="w-4 h-4 mr-1" />
+                            PDF
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
@@ -499,6 +565,81 @@ const Tasks: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={loading}
                 />
+              </div>
+              
+              {/* File Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Attachment (PDF only, max 3MB)
+                </label>
+                <div className="space-y-2">
+                  {/* Current attachment display */}
+                  {formData.attachment_url && !selectedFile && (
+                    <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Paperclip className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-700">
+                          Current attachment
+                        </span>
+                        <a
+                          href={formData.attachment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 text-sm underline"
+                        >
+                          View PDF
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* New file selection */}
+                  {!selectedFile ? (
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileSelect}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={loading || uploadingFile}
+                        title="Upload PDF attachment"
+                        aria-label="Upload PDF attachment"
+                      />
+                      <div className="flex items-center justify-center w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors">
+                        <Paperclip className="w-5 h-5 text-gray-400 mr-2" />
+                        <span className="text-sm text-gray-600">
+                          {formData.attachment_url ? 'Replace attachment' : 'Click to upload PDF'}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Paperclip className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm text-blue-700">
+                          {selectedFile.name} ({fileUploadService.formatFileSize(selectedFile.size)})
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleFileRemove}
+                        className="text-red-600 hover:text-red-800"
+                        disabled={loading || uploadingFile}
+                        title="Remove file"
+                        aria-label="Remove selected file"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {uploadingFile && (
+                    <div className="flex items-center space-x-2 text-sm text-blue-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span>Uploading file...</span>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {error && (
