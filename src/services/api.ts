@@ -241,12 +241,17 @@ export const updateUserProfile = async (
  * @param error - The error object from Supabase
  * @returns string - User-friendly error message
  */
-export const handleApiError = (error: any): string => {
-  if (error?.message) {
-    return error.message;
+export const handleApiError = (error: unknown): string => {
+  if (error && typeof error === 'object') {
+    if ('message' in error && typeof error.message === 'string') {
+      return error.message;
+    }
+    if ('error_description' in error && typeof error.error_description === 'string') {
+      return error.error_description;
+    }
   }
-  if (error?.error_description) {
-    return error.error_description;
+  if (error instanceof Error) {
+    return error.message;
   }
   return 'An unexpected error occurred. Please try again.';
 };
