@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.client';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import type { Project } from '../types';
 
 interface UseProjectsRealtimeReturn {
@@ -32,6 +33,7 @@ interface UseProjectsRealtimeReturn {
  */
 export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
   const { user } = useAuth();
+  const { addNotification } = useNotifications();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -216,6 +218,18 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
       }
 
       console.log('10. Project created successfully:', data);
+      
+      // Add notification for project creation
+      addNotification({
+        type: 'project_created',
+        title: 'New Project Created',
+        message: `Project "${projectToCreate.name}" has been created successfully`,
+        metadata: {
+          projectId: data.id,
+          projectName: projectToCreate.name
+        }
+      });
+      
       return data;
     } catch (err) {
       console.error('11. Error creating project:', err);
@@ -229,7 +243,7 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
       
       throw new Error(`Failed to create project: ${String(err)}`);
     }
-  }, [userRole, user]);
+  }, [userRole, user, addNotification]);
 
   /**
    * Update project (admin only)
@@ -250,24 +264,25 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error updating project:', error);
-        throw new Error(`Database error: ${error.message} (${error.code})`);
-      }
+      if (error) throw error;
       
-      if (!data) {
-        throw new Error('No data returned from database after update');
-      }
+      // Add notification for project update
+      addNotification({
+        type: 'project_updated',
+        title: 'Project Updated',
+        message: `Project "${data.name}" has been updated`,
+        metadata: {
+          projectId: data.id,
+          projectName: data.name
+        }
+      });
       
       return data;
     } catch (err) {
       console.error('Error updating project:', err);
-      if (err instanceof Error) {
-        throw err;
-      }
       throw new Error('Failed to update project');
     }
-  }, [canEditProject]);
+  }, [canEditProject, addNotification]);
 
   /**
    * Delete project (admin only)
@@ -278,6 +293,9 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
     }
 
     try {
+      // Get project name before deletion for notification
+      const projectToDelete = projects.find(p => p.id === projectId);
+      
       const { error } = await supabase
         .from('projects')
         .delete()
@@ -287,6 +305,19 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
         console.error('Error deleting project:', error);
         throw new Error(`Database error: ${error.message} (${error.code})`);
       }
+      
+      // Add notification for project deletion
+      if (projectToDelete) {
+        addNotification({
+          type: 'project_deleted',
+          title: 'Project Deleted',
+          message: `Project "${projectToDelete.name}" has been deleted`,
+          metadata: {
+            projectId: projectToDelete.id,
+            projectName: projectToDelete.name
+          }
+        });
+      }
     } catch (err) {
       console.error('Error deleting project:', err);
       if (err instanceof Error) {
@@ -294,7 +325,7 @@ export const useProjectsRealtime = (): UseProjectsRealtimeReturn => {
       }
       throw new Error('Failed to delete project');
     }
-  }, [canDeleteProject]);
+  }, [canDeleteProject, projects, addNotification]);
 
   /**
    * Manual refresh function

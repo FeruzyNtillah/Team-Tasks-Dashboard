@@ -1,9 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSessionManager } from '../hooks/useSessionManager';
 import { useUserProfile } from '../hooks/useUserProfile';
+import NotificationPanel from '../components/NotificationPanel';
 
 /**
  * Top Bar Component
@@ -44,15 +45,6 @@ const Topbar: React.FC = () => {
   };
 
   /**
-   * Handles notifications click
-   * Placeholder for future notifications functionality
-   */
-  const handleNotificationsClick = () => {
-    // TODO: Implement notifications panel
-    console.log('Notifications clicked');
-  };
-
-  /**
    * Gets user initials for fallback avatar
    * @returns string - User initials (max 2 characters)
    */
@@ -88,17 +80,8 @@ const Topbar: React.FC = () => {
         
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
-          {/* Notifications Icon */}
-          <button 
-            onClick={handleNotificationsClick}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative group" 
-            aria-label="Notifications"
-            title="Notifications"
-          >
-            <Bell className="w-5 h-5 text-gray-600 group-hover:text-gray-800" />
-            {/* Notification Indicator */}
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-          </button>
+          {/* Notifications */}
+          <NotificationPanel />
           
           {/* Profile Picture */}
           <button 

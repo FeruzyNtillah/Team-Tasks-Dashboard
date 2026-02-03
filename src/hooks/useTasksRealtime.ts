@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.client';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import type { Task } from '../types';
 
 interface UseTasksRealtimeReturn {
@@ -34,6 +35,7 @@ interface UseTasksRealtimeReturn {
  */
 export const useTasksRealtime = (): UseTasksRealtimeReturn => {
   const { user } = useAuth();
+  const { addNotification } = useNotifications();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -167,12 +169,25 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
         .single();
 
       if (error) throw error;
+      
+      // Add notification for task creation
+      addNotification({
+        type: 'task_created',
+        title: 'New Task Created',
+        message: `Task "${data.title}" has been created`,
+        metadata: {
+          taskId: data.id,
+          taskTitle: data.title,
+          projectId: data.project_id
+        }
+      });
+      
       return data;
     } catch (err) {
       console.error('Error creating task:', err);
       throw new Error('Failed to create task');
     }
-  }, [canCreateTask, user]);
+  }, [canCreateTask, user, addNotification]);
 
   /**
    * Update task (admin or assigned member)
@@ -196,12 +211,25 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
         .single();
 
       if (error) throw error;
+      
+      // Add notification for task update
+      addNotification({
+        type: 'task_updated',
+        title: 'Task Updated',
+        message: `Task "${data.title}" has been updated`,
+        metadata: {
+          taskId: data.id,
+          taskTitle: data.title,
+          projectId: data.project_id
+        }
+      });
+      
       return data;
     } catch (err) {
       console.error('Error updating task:', err);
       throw new Error('Failed to update task');
     }
-  }, [tasks, canEditTask]);
+  }, [tasks, canEditTask, addNotification]);
 
   /**
    * Delete task (admin only)
@@ -213,17 +241,34 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
     }
 
     try {
+      // Get task details before deletion for notification
+      const taskToDelete = tasks.find(t => t.id === taskId);
+      
       const { error } = await supabase
         .from('tasks')
         .delete()
         .eq('id', taskId);
 
       if (error) throw error;
+      
+      // Add notification for task deletion
+      if (taskToDelete) {
+        addNotification({
+          type: 'task_deleted',
+          title: 'Task Deleted',
+          message: `Task "${taskToDelete.title}" has been deleted`,
+          metadata: {
+            taskId: taskToDelete.id,
+            taskTitle: taskToDelete.title,
+            projectId: taskToDelete.project_id
+          }
+        });
+      }
     } catch (err) {
       console.error('Error deleting task:', err);
       throw new Error('Failed to delete task');
     }
-  }, [tasks, canDeleteTask]);
+  }, [tasks, canDeleteTask, addNotification]);
 
   /**
    * Manual refresh function

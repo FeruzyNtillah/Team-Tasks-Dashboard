@@ -130,3 +130,34 @@ export interface UIConfig {
   sidebarCollapsed: boolean;
   notifications: boolean;
 }
+
+/**
+ * Notification related types
+ */
+export interface Notification {
+  id: string;
+  type: 'project_created' | 'project_updated' | 'project_deleted' | 'task_created' | 'task_updated' | 'task_deleted' | 'task_assigned' | 'user_joined';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  userId?: string;
+  metadata?: {
+    projectId?: string;
+    taskId?: string;
+    projectName?: string;
+    taskTitle?: string;
+    userName?: string;
+    [key: string]: any;
+  };
+}
+
+export interface NotificationContextType {
+  notifications: Notification[];
+  unreadCount: number;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
+  markAsRead: (notificationId: string) => void;
+  markAllAsRead: () => void;
+  clearNotifications: () => void;
+  removeNotification: (notificationId: string) => void;
+}
