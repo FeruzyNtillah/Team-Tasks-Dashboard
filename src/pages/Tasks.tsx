@@ -87,6 +87,16 @@ const Tasks: React.FC = () => {
     }
   };
 
+  /**
+   * Helper function to get user name by ID
+   * Returns full_name if available, falls back to email, or shows "Unknown User"
+   */
+  const getUserName = (userId: string | undefined): string => {
+    if (!userId) return 'Unassigned';
+    const user = users.find(u => u.id === userId);
+    return user?.full_name || user?.email || 'Unknown User';
+  };
+
   const handleOpenModal = (task?: Task) => {
     if (task) {
       setEditingTask(task);
@@ -369,7 +379,7 @@ const Tasks: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center">
                           <User className="w-4 h-4 mr-2 text-gray-400" />
-                          {task.assigned_to || 'Unassigned'}
+                          {getUserName(task.assigned_to)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
