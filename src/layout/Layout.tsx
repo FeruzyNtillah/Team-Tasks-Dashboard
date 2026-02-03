@@ -26,18 +26,20 @@ const Layout: React.FC = () => {
   useSessionManager();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top navigation bar with user menu and notifications */}
       <TopBar />
       
       {/* Main content area with sidebar and page content */}
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar navigation */}
         <Sidebar />
         
         {/* Main content area where pages are rendered */}
-        <main className="flex-1 p-6">
-          <Outlet />
+        <main className="flex-1 overflow-auto p-6">
+          <div className="max-w-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
