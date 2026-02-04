@@ -35,7 +35,7 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-[url('https://images.unsplash.com/photo-1755593574938-6d66d28f8e57?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1080')] bg-cover bg-center bg-no-repeat lg:grid-cols-2">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full space-y-8 bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 m-4">
         <div>
           <Link
             to="/login"
