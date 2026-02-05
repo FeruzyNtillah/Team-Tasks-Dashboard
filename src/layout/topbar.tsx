@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSessionManager } from '../hooks/useSessionManager';
 import { useUserProfile } from '../hooks/useUserProfile';
 import NotificationPanel from '../components/NotificationPanel';
+import techLogo from '../assets/tech.jpg';
 
 /**
  * Top Bar Component
@@ -75,8 +76,15 @@ const Topbar: React.FC = () => {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
-        {/* Application Title */}
-        <h1 className="text-2xl font-bold text-gray-800">Tech_Savy Company</h1>
+        {/* Application Logo and Title */}
+        <div className="flex items-center space-x-3">
+          <img 
+            src={techLogo} 
+            alt="ImaraTech Logo" 
+            className="w-10 h-10 rounded-lg object-cover"
+          />
+          <h1 className="text-2xl font-bold text-gray-800">ImaraTech</h1>
+        </div>
         
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
