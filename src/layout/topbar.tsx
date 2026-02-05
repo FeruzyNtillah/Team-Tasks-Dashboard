@@ -6,6 +6,7 @@ import { useSessionManager } from '../hooks/useSessionManager';
 import { useUserProfile } from '../hooks/useUserProfile';
 import NotificationPanel from '../components/NotificationPanel';
 import techLogo from '../assets/tech.jpg';
+import { Button } from '../components/ui/button';
 
 /**
  * Top Bar Component
@@ -21,6 +22,7 @@ import techLogo from '../assets/tech.jpg';
  * - Profile picture fetched from user profile
  * - Automatic fallback to initials if no avatar
  * - Loading states for profile data
+ * - Clean shadcn component styling
  */
 const Topbar: React.FC = () => {
   const { user } = useAuth();
@@ -74,64 +76,65 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between px-6 py-3 md:py-4">
         {/* Application Logo and Title */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-3 min-w-0">
           <img 
             src={techLogo} 
             alt="ImaraTech Logo" 
-            className="w-10 h-10 rounded-lg object-cover"
+            className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-cover shrink-0"
           />
-          <h1 className="text-2xl font-bold text-gray-800">ImaraTech</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 hidden sm:block">ImaraTech</h1>
         </div>
         
         {/* Right Side Actions */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-3 md:gap-4 shrink-0">
           {/* Notifications */}
           <NotificationPanel />
           
-          {/* Profile Picture */}
+          {/* Profile Picture Button */}
           <button 
             onClick={handleProfileClick}
-            className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all duration-200 group"
+            className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-400 transition-colors duration-200 shrink-0 hover:shadow-md"
             aria-label="Profile"
             title="View Profile"
           >
             {loading ? (
-              <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+              <div className="w-full h-full bg-slate-200 animate-pulse rounded-full" />
             ) : avatarUrl ? (
               <img 
                 src={avatarUrl} 
                 alt="Profile" 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                className="w-full h-full object-cover transition-transform duration-200"
                 onError={(e) => {
                   // Fallback to initials if image fails to load
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.parentElement!.innerHTML = `
-                    <span class="text-blue-600 font-semibold text-sm">
+                    <span class="text-blue-600 font-semibold text-xs md:text-sm">
                       ${getUserInitials()}
                     </span>
                   `;
                 }}
               />
             ) : (
-              <span className="text-blue-600 font-semibold text-sm bg-blue-50 w-full h-full flex items-center justify-center">
+              <span className="text-blue-600 font-semibold text-xs md:text-sm bg-blue-50 w-full h-full flex items-center justify-center rounded-full">
                 {getUserInitials()}
               </span>
             )}
           </button>
           
           {/* Sign Out Button */}
-          <button 
+          <Button
             onClick={handleSignOut}
-            className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors group" 
-            aria-label="Sign Out"
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-slate-600 hover:text-red-600 hover:bg-red-50"
             title="Sign Out"
           >
-            <LogOut className="w-5 h-5 text-gray-600 group-hover:text-red-600" />
-            <span className="text-gray-600 group-hover:text-red-600 text-sm font-medium">Log Out</span>
-          </button>
+            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline text-sm font-medium">Log Out</span>
+          </Button>
         </div>
       </div>
     </header>

@@ -18,6 +18,7 @@ import Sidebar from './sidebar';
  * Features:
  * - Responsive design with Tailwind CSS
  * - Session management integration
+ * - Beautiful gradient background
  * - Outlet for nested route rendering
  */
 const Layout: React.FC = () => {
@@ -26,19 +27,21 @@ const Layout: React.FC = () => {
   useSessionManager();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex flex-col">
       {/* Top navigation bar with user menu and notifications */}
       <TopBar />
       
       {/* Main content area with sidebar and page content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden gap-0">
         {/* Sidebar navigation */}
         <Sidebar />
         
         {/* Main content area where pages are rendered */}
-        <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-full">
-            <Outlet />
+        <main className="flex-1 overflow-auto">
+          <div className="p-6 md:p-8 h-full">
+            <div className="max-w-full">
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>
