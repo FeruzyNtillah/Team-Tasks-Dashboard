@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -35,123 +40,139 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-[url('https://images.unsplash.com/photo-1755593574938-6d66d28f8e57?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1080')] bg-cover bg-center bg-no-repeat lg:grid-cols-2">
-      <div className="max-w-md w-full space-y-8 bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 m-4">
-        <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-600">
-            <Lock className="h-6 w-6 text-white" />
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link
-              to="/signup"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="relative">
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
+      {/* Base gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+      
+      {/* Animated gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 via-indigo-300/20 to-purple-400/20 animate-gradient-xy"></div>
+      
+      {/* Decorative animated blobs */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl animate-blob"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-400/30 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+      <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-purple-400/30 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+      
+      {/* Subtle grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
+      
+      {/* Radial gradient overlay for depth */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/20 via-transparent to-transparent"></div>
+      
+      {/* Content */}
+      <div className="w-full max-w-md relative z-10">
+        <Card className="border-0 shadow-2xl shadow-blue-500/10">
+          <CardHeader className="space-y-1 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg">
+              <Lock className="h-8 w-8 text-white" />
             </div>
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <Eye className="h-5 w-5 text-gray-400" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    {error}
-                  </h3>
+            <CardTitle className="text-3xl font-bold tracking-tight">Welcome back</CardTitle>
+            <CardDescription className="text-base">
+              Sign in to your account to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 h-11"
+                    disabled={loading}
+                  />
                 </div>
               </div>
-            </div>
-          )}
 
-          {message && (
-            <div className="rounded-md bg-green-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800">
-                    {message}
-                  </h3>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10 h-11"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    disabled={loading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
               </div>
-            </div>
-          )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              ) : (
-                'Sign in'
+              <div className="flex items-center justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
-            </button>
-          </div>
 
-          <div className="text-center">
-            <Link
-              to="/forgot-password"
-              className="font-medium text-blue-600 hover:text-blue-500 text-sm"
-            >
-              Forgot your password?
-            </Link>
-          </div>
-        </form>
+              {message && (
+                <Alert className="border-green-200 bg-green-50 text-green-800">
+                  <AlertCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription>{message}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full h-11 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/50"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign in'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="text-sm text-center text-muted-foreground">
+              Don't have an account?{' '}
+              <Link
+                to="/signup"
+                className="font-semibold text-primary hover:underline"
+              >
+                Create an account
+              </Link>
+            </div>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
