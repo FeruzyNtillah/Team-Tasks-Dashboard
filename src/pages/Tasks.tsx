@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, X, Calendar, User, Edit2, Trash2, AlertCircle, Paperclip } from 'lucide-react';
+import { Search, Plus, X, Calendar, User, Edit2, Trash2, AlertCircle, Paperclip, CheckSquare } from 'lucide-react';
 import { useTasksRealtime } from '../hooks/useTasksRealtime';
 import { useProjectsData } from '../hooks/useProjectsData';
 import { fileUploadService } from '../services/fileUpload';
