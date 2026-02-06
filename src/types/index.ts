@@ -71,6 +71,10 @@ export interface Task {
   updated_at: string;
   due_date?: string;
   attachment_url?: string;
+  // New fields for submission tracking
+  submission_status?: 'pending' | 'on_time' | 'late';
+  submitted_at?: string;
+  days_overdue?: number;
 }
 
 /**
@@ -94,7 +98,7 @@ export interface FormErrors {
 /**
  * API response types
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
@@ -113,11 +117,11 @@ export interface Pagination {
 /**
  * Table column definition types
  */
-export interface TableColumn<T = any> {
+export interface TableColumn<T = unknown> {
   key: keyof T;
   title: string;
   sortable?: boolean;
-  render?: (value: any, record: T) => React.ReactNode;
+  render?: (value: unknown, record: T) => React.ReactNode;
 }
 
 /**
@@ -148,7 +152,7 @@ export interface Notification {
     projectName?: string;
     taskTitle?: string;
     userName?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

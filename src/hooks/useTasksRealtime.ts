@@ -13,6 +13,7 @@ interface UseTasksRealtimeReturn {
   canCreateTask: boolean;
   canEditTask: (task: Task) => boolean;
   canDeleteTask: () => boolean;
+  canUploadAttachment: (task: Task) => boolean;
   refreshTasks: (projectId?: string) => Promise<void>;
   createTask: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => Promise<Task>;
   updateTask: (taskId: string, updates: Partial<Task>) => Promise<Task>;
@@ -30,8 +31,8 @@ interface UseTasksRealtimeReturn {
  * - Automatic data synchronization across clients
  * 
  * Permission Rules:
- * - Admin: Can create, view, update, delete all tasks
- * - Member: Can view all tasks, can only update tasks assigned to them
+ * - Admin: Can create, view, update, delete all tasks (no attachment upload)
+ * - Member: Can view all tasks, update status and upload PDF attachments for assigned tasks
  */
 export const useTasksRealtime = (): UseTasksRealtimeReturn => {
   const { user } = useAuth();
@@ -134,6 +135,7 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
 
   const canEditTask = useCallback((task: Task): boolean => {
     if (userRole === 'admin') return true;
+    // Members can only edit status and attachment of their assigned tasks
     if (userRole === 'member') return task.assigned_to === user?.id;
     return false;
   }, [userRole, user]);
@@ -143,7 +145,21 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
   }, [userRole]);
 
   /**
+   * Check if user can upload attachment for a task
+   * - Admins: No (they create tasks, don't submit reports)
+   * - Members: Yes, but only for tasks assigned to them
+   */
+  const canUploadAttachment = useCallback((task: Task): boolean => {
+    // Admins don't upload attachments
+    if (userRole === 'admin') return false;
+    // Members can upload only for tasks assigned to them
+    if (userRole === 'member') return task.assigned_to === user?.id;
+    return false;
+  }, [userRole, user]);
+
+  /**
    * Create new task (admin only)
+   * Note: Admins don't set attachment_url when creating tasks
    */
   const createTask = useCallback(async (
     taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>
@@ -160,6 +176,9 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
       const taskToCreate = {
         ...taskData,
         created_by: user.id,
+        // Ensure admin doesn't set attachment_url
+        attachment_url: undefined,
+        submission_status: 'pending',
       };
 
       const { data, error } = await supabase
@@ -190,7 +209,9 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
   }, [canCreateTask, user, addNotification]);
 
   /**
-   * Update task (admin or assigned member)
+   * Update task
+   * - Admin: Can update any field except attachment_url
+   * - Member: Can only update status and attachment_url for assigned tasks
    */
   const updateTask = useCallback(async (
     taskId: string,
@@ -203,9 +224,22 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
     }
 
     try {
+      let allowedUpdates: Partial<Task> = {};
+
+      if (userRole === 'admin') {
+        // Admin can update everything except attachment_url
+        const adminUpdates = { ...updates };
+        delete adminUpdates.attachment_url;
+        allowedUpdates = adminUpdates;
+      } else if (userRole === 'member') {
+        // Members can only update status and attachment_url
+        if (updates.status) allowedUpdates.status = updates.status;
+        if (updates.attachment_url !== undefined) allowedUpdates.attachment_url = updates.attachment_url;
+      }
+
       const { data, error } = await supabase
         .from('tasks')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update({ ...allowedUpdates, updated_at: new Date().toISOString() })
         .eq('id', taskId)
         .select()
         .single();
@@ -229,7 +263,7 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
       console.error('Error updating task:', err);
       throw new Error('Failed to update task');
     }
-  }, [tasks, canEditTask, addNotification]);
+  }, [tasks, canEditTask, userRole, addNotification]);
 
   /**
    * Delete task (admin only)
@@ -351,6 +385,7 @@ export const useTasksRealtime = (): UseTasksRealtimeReturn => {
     canCreateTask,
     canEditTask,
     canDeleteTask,
+    canUploadAttachment,
     refreshTasks,
     createTask,
     updateTask,

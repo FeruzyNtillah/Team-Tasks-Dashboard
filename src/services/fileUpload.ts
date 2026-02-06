@@ -16,15 +16,20 @@ export interface UploadError {
 /**
  * File Upload Service for Task Attachments
  * 
- * This service handles uploading files to Supabase Storage
- * with proper validation and error handling.
+ * This service handles uploading PDF reports by MEMBERS ONLY to Supabase Storage.
+ * 
+ * IMPORTANT WORKFLOW:
+ * - Admins create tasks WITHOUT attachments
+ * - Members submit PDF reports as proof of completed work
+ * - Members can only upload for tasks assigned to them
+ * - Uploads must be done before the due date (or marked as late)
  * 
  * Features:
  * - PDF only validation
  * - 3MB file size limit
- * - User-specific folder structure
+ * - User-specific folder structure (enforced by RLS)
  * - Automatic cleanup on errors
- * - Progress tracking
+ * - Public read access for all authenticated users
  */
 
 class FileUploadService {
@@ -54,6 +59,11 @@ class FileUploadService {
 
   /**
    * Generate unique file path
+   * Path format: {userId}/{timestamp}_{sanitized_filename}.pdf
+   * 
+   * This structure is enforced by RLS policies:
+   * - Users can only upload to their own folder
+   * - All authenticated users can read
    */
   private generateFilePath(userId: string, file: File): string {
     const timestamp = Date.now();
@@ -63,11 +73,19 @@ class FileUploadService {
 
   /**
    * Upload file to Supabase Storage
+   * 
+   * @param file - The PDF file to upload
+   * @param userId - The ID of the user uploading (must match assigned_to)
+   * @param onProgress - Optional progress callback
+   * @returns Upload result with public URL
+   * 
+   * NOTE: RLS policies ensure:
+   * - Only the task assignee can upload to their folder
+   * - All authenticated users can view/download the PDF
    */
   async uploadFile(
     file: File,
-    userId: string,
-    onProgress?: (progress: number) => void
+    userId: string
   ): Promise<UploadResult> {
     try {
       // Validate file
@@ -90,7 +108,7 @@ class FileUploadService {
         throw new Error(`Upload failed: ${error.message}`);
       }
 
-      // Get public URL
+      // Get public URL (accessible by all authenticated users via RLS)
       const { data: { publicUrl } } = supabase.storage
         .from(this.BUCKET_NAME)
         .getPublicUrl(data.path);
@@ -111,6 +129,8 @@ class FileUploadService {
 
   /**
    * Delete file from Supabase Storage
+   * 
+   * NOTE: RLS policies ensure users can only delete their own files
    */
   async deleteFile(filePath: string): Promise<void> {
     try {
@@ -205,6 +225,36 @@ class FileUploadService {
   isPDF(fileName: string): boolean {
     return this.getFileExtension(fileName) === 'pdf';
   }
+
+  /**
+   * Check if submission is on time
+   * @param dueDate - Task due date
+   * @returns true if current time is before due date
+   */
+  isSubmissionOnTime(dueDate: string): boolean {
+    const due = new Date(dueDate);
+    const now = new Date();
+    return now <= due;
+  }
+
+  /**
+   * Calculate days overdue
+   * @param dueDate - Task due date
+   * @returns Number of days overdue (0 if on time or no due date)
+   */
+  calculateDaysOverdue(dueDate: string | undefined): number {
+    if (!dueDate) return 0;
+
+    const due = new Date(dueDate);
+    const now = new Date();
+
+    if (now <= due) return 0;
+
+    const diffTime = Math.abs(now.getTime() - due.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+  }
 }
 
 // Export singleton instance
@@ -217,3 +267,5 @@ export const getFileInfo = fileUploadService.getFileInfo.bind(fileUploadService)
 export const fileExists = fileUploadService.fileExists.bind(fileUploadService);
 export const formatFileSize = fileUploadService.formatFileSize.bind(fileUploadService);
 export const isPDF = fileUploadService.isPDF.bind(fileUploadService);
+export const isSubmissionOnTime = fileUploadService.isSubmissionOnTime.bind(fileUploadService);
+export const calculateDaysOverdue = fileUploadService.calculateDaysOverdue.bind(fileUploadService);
