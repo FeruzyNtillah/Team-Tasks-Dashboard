@@ -27,19 +27,19 @@ const Layout: React.FC = () => {
   useSessionManager();
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 flex flex-col">
       {/* Top navigation bar with user menu and notifications */}
       <TopBar />
       
       {/* Main content area with sidebar and page content */}
-      <div className="flex flex-1 overflow-hidden gap-0">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar navigation */}
         <Sidebar />
         
         {/* Main content area where pages are rendered */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto bg-linear-to-br from-slate-50 to-slate-100">
           <div className="p-6 md:p-8 h-full">
-            <div className="max-w-full">
+            <div className="max-w-7xl mx-auto">
               <Outlet />
             </div>
           </div>

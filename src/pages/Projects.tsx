@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Eye, Edit2, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, Eye, Edit2, Trash2, AlertCircle, FolderOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useProjectsOptimized } from '../hooks/useProjectsOptimized';
 import type { Project } from '../types';
@@ -120,8 +120,12 @@ const Projects: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold text-gray-800">Projects</h2>
+        <div>
+          <h2 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Projects</h2>
+          <p className="text-slate-500 mt-1 font-medium">Manage and track all your projects</p>
+        </div>
         {canCreateProject && (
           <button
             onClick={() => {
@@ -129,7 +133,7 @@ const Projects: React.FC = () => {
               setFormData({ name: '', description: '', status: 'active' });
               setShowCreateModal(true);
             }}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="btn-primary"
           >
             <Plus className="w-5 h-5" />
             <span>Create Project</span>
@@ -139,81 +143,69 @@ const Projects: React.FC = () => {
 
       {/* Error Display */}
       {(error || projectsError) && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <span className="text-red-800">{error || projectsError}</span>
-          </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <span className="text-red-800 text-sm font-medium">{error || projectsError}</span>
         </div>
       )}
 
       {/* Loading State */}
       {projectsLoading && (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="flex justify-center py-12">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600 mb-3"></div>
+            <p className="text-slate-500 text-sm font-medium">Loading projects...</p>
+          </div>
         </div>
       )}
 
-      {/* Projects Data Grid */}
+      {/* Projects Data Table */}
       {!projectsLoading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="card-section overflow-hidden">
           <div className="overflow-x-auto">
-            <div className="min-w-full">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="table-header">Name</th>
+                  <th className="table-header">Description</th>
+                  <th className="table-header">Status</th>
+                  <th className="table-header">Created At</th>
+                  <th className="table-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {projects.length === 0 ? (
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created At
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    <td colSpan={5} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center">
+                        <FolderOpen className="w-12 h-12 text-slate-300 mb-3" />
+                        <p className="text-slate-600 font-semibold">No projects found</p>
+                        {canCreateProject && <p className="text-sm text-slate-500 mt-1">Create your first project to get started</p>}
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {projects.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                        No projects found. {canCreateProject && 'Create your first project to get started.'}
-                      </td>
-                    </tr>
-                  ) : (
-                    projects.map((project) => (
-                      <tr key={project.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{project.name}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-500 max-w-md truncate">{project.description}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            project.status === 'active' ? 'bg-green-100 text-green-800' :
-                          project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
+                ) : (
+                  projects.map((project) => (
+                    <tr key={project.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="table-cell font-semibold text-slate-900">{project.name}</td>
+                      <td className="table-cell text-slate-600 max-w-xs truncate">{project.description}</td>
+                      <td className="table-cell">
+                        <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                          project.status === 'active' ? 'badge-success' :
+                          project.status === 'completed' ? 'badge-info' :
+                          'badge-neutral'
                         }`}>
                           {project.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
-                          {new Date(project.created_at).toLocaleDateString()}
-                        </div>
+                      <td className="table-cell text-sm text-slate-500">
+                        {new Date(project.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
+                      <td className="table-cell">
+                        <div className="flex items-center gap-2">
                           <Link 
                             to={`/projects/${project.id}`}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="View Project"
                           >
                             <Eye className="w-4 h-4" />
@@ -221,7 +213,7 @@ const Projects: React.FC = () => {
                           {canEditProject() && (
                             <button
                               onClick={() => handleEditProject(project)}
-                              className="text-gray-600 hover:text-gray-900"
+                              className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                               title="Edit Project"
                             >
                               <Edit2 className="w-4 h-4" />
@@ -230,7 +222,7 @@ const Projects: React.FC = () => {
                           {canDeleteProject() && (
                             <button
                               onClick={() => handleDeleteProject(project.id)}
-                              className="text-red-600 hover:text-red-900"
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="Delete Project"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -243,90 +235,91 @@ const Projects: React.FC = () => {
                 )}
               </tbody>
             </table>
-            </div>
           </div>
         </div>
       )}
 
       {/* Create/Edit Project Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              {editingProject ? 'Edit Project' : 'Create New Project'}
-            </h3>
-            
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
-                  <span className="text-red-800 text-sm">{error}</span>
-                </div>
-              </div>
-            )}
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Project Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter project name"
-                  disabled={loading}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows={3}
-                  placeholder="Enter project description"
-                  disabled={loading}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'completed' | 'archived' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={loading}
-                  aria-label="Project status"
-                  title="Select project status"
-                >
-                  <option value="active">Active</option>
-                  <option value="completed">Completed</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="border-b border-slate-200 px-6 py-4">
+              <h3 className="text-xl font-bold text-slate-900">
+                {editingProject ? 'Edit Project' : 'Create New Project'}
+              </h3>
+              <p className="text-sm text-slate-500 mt-1">{editingProject ? 'Update project details' : 'Add a new project to your dashboard'}</p>
             </div>
             
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="px-6 py-6">
+              {error && (
+                <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                  <span className="text-red-800 text-sm font-medium">{error}</span>
+                </div>
+              )}
+              
+              <form className="space-y-4">
+                <div>
+                  <label className="label-form">
+                    Project Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="input-field"
+                    placeholder="e.g., Website Redesign"
+                    disabled={loading}
+                  />
+                </div>
+                
+                <div>
+                  <label className="label-form">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="input-field resize-none"
+                    rows={3}
+                    placeholder="Describe your project..."
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="label-form">
+                    Status
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'completed' | 'archived' })}
+                    className="input-field"
+                    disabled={loading}
+                    aria-label="Project status"
+                  >
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+            
+            <div className="border-t border-slate-200 px-6 py-4 bg-slate-50 rounded-b-xl flex justify-end gap-3">
               <button
                 onClick={resetForm}
                 disabled={loading}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+                className="btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={editingProject ? handleUpdateProject : handleCreateProject}
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                className="btn-primary disabled:opacity-50"
               >
-                {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
+                {loading && <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />}
                 <span>{editingProject ? 'Update Project' : 'Create Project'}</span>
               </button>
             </div>
