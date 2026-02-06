@@ -49,7 +49,7 @@ const Sidebar: React.FC = () => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3">
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
