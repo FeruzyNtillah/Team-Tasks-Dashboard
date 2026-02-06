@@ -6,7 +6,6 @@ import { useSessionManager } from '../hooks/useSessionManager';
 import { useUserProfile } from '../hooks/useUserProfile';
 import NotificationPanel from '../components/NotificationPanel';
 import techLogo from '../assets/tech.jpg';
-import { Button } from '../components/ui/button';
 
 /**
  * Top Bar Component
@@ -125,16 +124,14 @@ const Topbar: React.FC = () => {
           </button>
           
           {/* Sign Out Button */}
-          <Button
+          <button
             onClick={handleSignOut}
-            variant="ghost"
-            size="sm"
-            className="gap-2 text-slate-600 hover:text-red-600 hover:bg-red-50"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Sign Out"
           >
             <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="hidden sm:inline text-sm font-medium">Log Out</span>
-          </Button>
+            <span className="hidden sm:inline font-medium">Log Out</span>
+          </button>
         </div>
       </div>
     </header>
