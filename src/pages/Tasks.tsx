@@ -32,7 +32,7 @@ const Tasks: React.FC = () => {
     due_date: '',
     attachment_url: ''
   });
-  
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
 
@@ -41,9 +41,11 @@ const Tasks: React.FC = () => {
     loading: tasksLoading,
     error: tasksError,
     userId,
+    userRole,
     canCreateTask,
     canEditTask,
     canDeleteTask,
+    canUploadAttachment,
     createTask,
     updateTask,
     deleteTask
@@ -59,10 +61,10 @@ const Tasks: React.FC = () => {
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+        (task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
       const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
       const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-      
+
       return matchesSearch && matchesStatus && matchesPriority;
     });
   }, [tasks, searchTerm, statusFilter, priorityFilter]);
@@ -87,6 +89,14 @@ const Tasks: React.FC = () => {
     }
   };
 
+  const getSubmissionStatusColor = (status?: string) => {
+    switch (status) {
+      case 'on_time': return 'bg-green-100 text-green-800';
+      case 'late': return 'bg-red-100 text-red-800';
+      default: return 'bg-slate-100 text-slate-600'; // Pending
+    }
+  };
+
   /**
    * Helper function to get user name by ID
    * Returns full_name if available, falls back to email, or shows "Unknown User"
@@ -107,7 +117,7 @@ const Tasks: React.FC = () => {
         priority: task.priority,
         assigned_to: task.assigned_to || '',
         project_id: task.project_id,
-        due_date: task.due_date || '',
+        due_date: task.due_date ? task.due_date.split('T')[0] : '',
         attachment_url: task.attachment_url || ''
       });
     } else {
@@ -165,10 +175,14 @@ const Tasks: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.title || !formData.project_id) {
-      setError('Title and Project are required fields');
-      return;
+
+    // For members editing tasks, some fields might be disabled but still required for the form state
+    // We only validate strictly for new tasks or admin updates where fields are editable
+    if (userRole === 'admin' || !editingTask) {
+      if (!formData.title || !formData.project_id) {
+        setError('Title and Project are required fields');
+        return;
+      }
     }
 
     setLoading(true);
@@ -176,9 +190,10 @@ const Tasks: React.FC = () => {
 
     try {
       let attachmentUrl = formData.attachment_url;
-      
+
       // Upload new file if selected
-      if (selectedFile && userId) {
+      // Only if user is allowed to upload (Member + Assigned)
+      if (selectedFile && userId && (editingTask ? canUploadAttachment(editingTask) : false)) {
         setUploadingFile(true);
         try {
           const uploadResult = await fileUploadService.uploadFile(selectedFile, userId);
@@ -214,7 +229,7 @@ const Tasks: React.FC = () => {
           attachment_url: attachmentUrl
         });
       }
-      
+
       handleCloseModal();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to save task');
@@ -239,6 +254,8 @@ const Tasks: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const isFieldDisabled = userRole === 'member' && !!editingTask;
 
   return (
     <div className="space-y-6">
@@ -293,7 +310,7 @@ const Tasks: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-3 flex-col sm:flex-row">
               <select
                 value={statusFilter}
@@ -307,7 +324,7 @@ const Tasks: React.FC = () => {
                 <option value="review">Review</option>
                 <option value="completed">Completed</option>
               </select>
-              
+
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
@@ -337,7 +354,7 @@ const Tasks: React.FC = () => {
                   <th className="table-header">Priority</th>
                   <th className="table-header">Assigned To</th>
                   <th className="table-header">Due Date</th>
-                  <th className="table-header">Attachment</th>
+                  <th className="table-header">Submission</th>
                   <th className="table-header">Actions</th>
                 </tr>
               </thead>
@@ -382,24 +399,31 @@ const Tasks: React.FC = () => {
                         </div>
                       </td>
                       <td className="table-cell text-sm">
-                        {filteredTask.attachment_url ? (
-                          <a
-                            href={filteredTask.attachment_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
-                            title="View attachment"
-                          >
-                            <Paperclip className="w-4 h-4" />
-                            <span>View</span>
-                          </a>
-                        ) : (
-                          <span className="text-slate-400 text-xs">—</span>
-                        )}
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex w-fit px-2 py-0.5 text-xs font-medium rounded ${getSubmissionStatusColor(filteredTask.submission_status)}`}>
+                            {filteredTask.submission_status ? filteredTask.submission_status.replace('_', ' ') : 'pending'}
+                          </span>
+                          {filteredTask.submission_status === 'late' && filteredTask.days_overdue && (
+                            <span className="text-[10px] text-red-600 font-medium">
+                              {filteredTask.days_overdue} days overdue
+                            </span>
+                          )}
+                          {filteredTask.attachment_url && (
+                            <a
+                              href={filteredTask.attachment_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-0.5 mt-0.5"
+                            >
+                              <Paperclip className="w-3 h-3" />
+                              View Report
+                            </a>
+                          )}
+                        </div>
                       </td>
                       <td className="table-cell">
                         <div className="flex items-center gap-2">
-                          {canEditTask(filteredTask.id) && (
+                          {canEditTask(filteredTask) && (
                             <button
                               onClick={() => handleOpenModal(filteredTask)}
                               className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -408,7 +432,7 @@ const Tasks: React.FC = () => {
                               <Edit2 className="w-4 h-4" />
                             </button>
                           )}
-                          {canDeleteTask(filteredTask.id) && (
+                          {canDeleteTask() && (
                             <button
                               onClick={() => handleDelete(filteredTask.id)}
                               className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -448,7 +472,7 @@ const Tasks: React.FC = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               {/* Error Display */}
               {error && (
@@ -461,20 +485,20 @@ const Tasks: React.FC = () => {
               {/* Title */}
               <div>
                 <label htmlFor="task-title" className="label-form">
-                  Title *
+                  Title {isFieldDisabled ? '' : '*'}
                 </label>
                 <input
                   type="text"
-                  required
+                  required={!isFieldDisabled}
                   id="task-title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="input-field"
+                  className="input-field disabled:bg-slate-100 disabled:text-slate-500"
                   placeholder="Task title"
-                  disabled={loading}
+                  disabled={loading || isFieldDisabled}
                 />
               </div>
-              
+
               {/* Description */}
               <div>
                 <label htmlFor="task-description" className="label-form">
@@ -485,12 +509,12 @@ const Tasks: React.FC = () => {
                   id="task-description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="input-field resize-none"
+                  className="input-field resize-none disabled:bg-slate-100 disabled:text-slate-500"
                   placeholder="Task description"
-                  disabled={loading}
+                  disabled={loading || isFieldDisabled}
                 />
               </div>
-              
+
               {/* Status and Priority */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -502,7 +526,7 @@ const Tasks: React.FC = () => {
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as 'todo' | 'in_progress' | 'review' | 'completed' })}
                     className="input-field"
-                    disabled={loading}
+                    disabled={loading} // Status is always editable by assigned member
                   >
                     <option value="todo">To Do</option>
                     <option value="in_progress">In Progress</option>
@@ -510,7 +534,7 @@ const Tasks: React.FC = () => {
                     <option value="completed">Completed</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label htmlFor="task-priority" className="label-form">
                     Priority
@@ -519,8 +543,8 @@ const Tasks: React.FC = () => {
                     id="task-priority"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high' | 'urgent' })}
-                    className="input-field"
-                    disabled={loading}
+                    className="input-field disabled:bg-slate-100 disabled:text-slate-500"
+                    disabled={loading || isFieldDisabled}
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -529,20 +553,20 @@ const Tasks: React.FC = () => {
                   </select>
                 </div>
               </div>
-              
+
               {/* Project and Assigned To */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="task-project" className="label-form">
-                    Project *
+                    Project {isFieldDisabled ? '' : '*'}
                   </label>
                   <select
                     id="task-project"
                     value={formData.project_id}
                     onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-                    className="input-field"
-                    disabled={loading || dataLoading}
-                    required
+                    className="input-field disabled:bg-slate-100 disabled:text-slate-500"
+                    disabled={loading || dataLoading || isFieldDisabled}
+                    required={!isFieldDisabled}
                   >
                     <option value="">Select a project</option>
                     {projects.map((project) => (
@@ -552,7 +576,7 @@ const Tasks: React.FC = () => {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label htmlFor="task-assigned-to" className="label-form">
                     Assigned To
@@ -561,8 +585,8 @@ const Tasks: React.FC = () => {
                     id="task-assigned-to"
                     value={formData.assigned_to}
                     onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-                    className="input-field"
-                    disabled={loading || dataLoading}
+                    className="input-field disabled:bg-slate-100 disabled:text-slate-500"
+                    disabled={loading || dataLoading || isFieldDisabled}
                   >
                     <option value="">Unassigned</option>
                     {users.map((user) => (
@@ -573,7 +597,7 @@ const Tasks: React.FC = () => {
                   </select>
                 </div>
               </div>
-              
+
               {/* Due Date */}
               <div>
                 <label htmlFor="task-due-date" className="label-form">
@@ -584,85 +608,87 @@ const Tasks: React.FC = () => {
                   id="task-due-date"
                   value={formData.due_date}
                   onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  className="input-field"
-                  disabled={loading}
+                  className="input-field disabled:bg-slate-100 disabled:text-slate-500"
+                  disabled={loading || isFieldDisabled}
                 />
               </div>
-              
-              {/* File Upload Section */}
-              <div className="border-t border-slate-200 pt-5">
-                <label className="label-form">
-                  Attachment (PDF only, max 3MB)
-                </label>
-                <div className="space-y-3">
-                  {/* Current attachment display */}
-                  {formData.attachment_url && !selectedFile && (
-                    <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Paperclip className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-900">Current attachment</span>
-                        <a
-                          href={formData.attachment_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm font-semibold underline"
-                        >
-                          View
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* New file selection */}
-                  {!selectedFile ? (
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleFileSelect}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        disabled={loading || uploadingFile}
-                        title="Upload PDF attachment"
-                        aria-label="Upload PDF attachment"
-                      />
-                      <div className="flex items-center justify-center w-full p-4 border-2 border-dashed border-slate-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer">
-                        <Paperclip className="w-5 h-5 text-slate-400 mr-2" />
-                        <span className="text-sm text-slate-600 font-medium">
-                          {formData.attachment_url ? 'Replace attachment' : 'Click or drag to upload PDF'}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <Paperclip className="w-4 h-4 text-green-600" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-green-900 truncate">{selectedFile.name}</p>
-                          <p className="text-xs text-green-700">{fileUploadService.formatFileSize(selectedFile.size)}</p>
+
+              {/* File Upload Section - Only for Assignee if task exists */}
+              {editingTask && canUploadAttachment(editingTask) && (
+                <div className="border-t border-slate-200 pt-5">
+                  <label className="label-form">
+                    Report Submission (PDF only, max 3MB)
+                  </label>
+                  <div className="space-y-3">
+                    {/* Current attachment display */}
+                    {formData.attachment_url && !selectedFile && (
+                      <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Paperclip className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-900">Current submission</span>
+                          <a
+                            href={formData.attachment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm font-semibold underline"
+                          >
+                            View
+                          </a>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleFileRemove}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors ml-2 shrink-0"
-                        disabled={loading || uploadingFile}
-                        title="Remove file"
-                        aria-label="Remove selected file"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                  
-                  {uploadingFile && (
-                    <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-300 border-t-blue-600"></div>
-                      <span>Uploading file...</span>
-                    </div>
-                  )}
+                    )}
+
+                    {/* New file selection */}
+                    {!selectedFile ? (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleFileSelect}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={loading || uploadingFile}
+                          title="Upload Report PDF"
+                          aria-label="Upload Report PDF"
+                        />
+                        <div className="flex items-center justify-center w-full p-4 border-2 border-dashed border-slate-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer">
+                          <Paperclip className="w-5 h-5 text-slate-400 mr-2" />
+                          <span className="text-sm text-slate-600 font-medium">
+                            {formData.attachment_url ? 'Replace report' : 'Click or drag to upload Report PDF'}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Paperclip className="w-4 h-4 text-green-600" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-green-900 truncate">{selectedFile.name}</p>
+                            <p className="text-xs text-green-700">{fileUploadService.formatFileSize(selectedFile.size)}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleFileRemove}
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors ml-2 shrink-0"
+                          disabled={loading || uploadingFile}
+                          title="Remove file"
+                          aria-label="Remove selected file"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    {uploadingFile && (
+                      <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-300 border-t-blue-600"></div>
+                        <span>Uploading report...</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              
+              )}
+
               {/* Form Actions */}
               <div className="border-t border-slate-200 pt-5 flex justify-end gap-3 sticky bottom-0 bg-white">
                 <button
