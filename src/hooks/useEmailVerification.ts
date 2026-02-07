@@ -63,8 +63,8 @@ export const useEmailVerification = () => {
         setVerificationSent(true);
         setMessage('Verification email sent! Please check your inbox.');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setIsVerifying(false);
     }
@@ -89,8 +89,8 @@ export const useEmailVerification = () => {
         setMessage('Email verified successfully!');
         return true;
       }
-    } catch (err: any) {
-      console.error('Error checking verification:', err);
+    } catch (err: unknown) {
+      console.error('Error checking verification:', err instanceof Error ? err.message : err);
     }
     return false;
   };

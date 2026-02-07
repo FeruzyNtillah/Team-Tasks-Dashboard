@@ -198,6 +198,8 @@ export const useOptimizedData = <T>(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
+  const depsString = JSON.stringify(dependencies);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -212,7 +214,7 @@ export const useOptimizedData = <T>(
     } finally {
       setLoading(false);
     }
-  }, [key, fetcher, ...(dependencies as readonly unknown[])]);
+  }, [key, fetcher, depsString]);
 
   useEffect(() => {
     fetchData();

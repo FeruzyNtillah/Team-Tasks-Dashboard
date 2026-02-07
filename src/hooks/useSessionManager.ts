@@ -104,7 +104,7 @@ export const useSessionManager = () => {
         
         // If we can reach the server, server is running
         sessionStorage.removeItem('serverDownTime');
-      } catch (error) {
+      } catch {
         // If we can't reach the server, mark it as down
         if (!sessionStorage.getItem('serverDownTime')) {
           sessionStorage.setItem('serverDownTime', Date.now().toString());
