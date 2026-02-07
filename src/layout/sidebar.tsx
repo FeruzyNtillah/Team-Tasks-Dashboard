@@ -49,7 +49,7 @@ const Sidebar: React.FC = () => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
-        <ul className="space-y-1">
+        <ul className="space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -58,7 +58,7 @@ const Sidebar: React.FC = () => {
                   to={item.path}
                   className={({ isActive }) =>
                     cn(
-                      'group relative flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 font-medium',
+                      'group relative flex items-center gap-3 px-5 py-3 rounded-lg transition-all duration-200 font-medium',
                       isActive
                         ? 'bg-linear-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm border-l-4 border-blue-600 pl-3'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
