@@ -17,7 +17,7 @@ const Tasks: React.FC = () => {
     title: string;
     description: string;
     status: 'todo' | 'in_progress' | 'review' | 'completed';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
+    priority: 'low' | 'medium' | 'high';
     assigned_to: string;
     project_id: string;
     due_date?: string;
@@ -81,7 +81,6 @@ const Tasks: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-200 text-red-900';
       case 'high': return 'bg-red-100 text-red-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
@@ -114,7 +113,7 @@ const Tasks: React.FC = () => {
         title: task.title,
         description: task.description || '',
         status: task.status,
-        priority: task.priority,
+        priority: task.priority === 'urgent' ? 'high' : task.priority,
         assigned_to: task.assigned_to || '',
         project_id: task.project_id,
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
@@ -542,14 +541,13 @@ const Tasks: React.FC = () => {
                   <select
                     id="task-priority"
                     value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high' | 'urgent' })}
+                    onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high' })}
                     className="input-field disabled:bg-slate-100 disabled:text-slate-500"
                     disabled={loading || isFieldDisabled}
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
                   </select>
                 </div>
               </div>
