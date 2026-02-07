@@ -15,7 +15,7 @@ interface CacheItem<T> {
 }
 
 class DataCache {
-  private cache = new Map<string, CacheItem<any>>();
+  private cache = new Map<string, CacheItem<unknown>>();
 
   set<T>(key: string, data: T): void {
     this.cache.set(key, {
@@ -33,7 +33,7 @@ class DataCache {
       return null;
     }
     
-    return item.data;
+    return item.data as T;
   }
 
   clear(): void {
@@ -57,8 +57,8 @@ export class OptimizedSupabaseClient {
    */
   static async fetchWithCache<T>(
     key: string,
-    fetcher: () => Promise<{ data: T | null; error: any }>
-  ): Promise<{ data: T | null; error: any }> {
+    fetcher: () => Promise<{ data: T | null; error: unknown }>
+  ): Promise<{ data: T | null; error: unknown }> {
     // Check cache first
     const cached = dataCache.get<T>(key);
     if (cached) {
@@ -191,12 +191,12 @@ export class OptimizedSupabaseClient {
  */
 export const useOptimizedData = <T>(
   key: string,
-  fetcher: () => Promise<{ data: T | null; error: any }>,
-  dependencies: any[] = []
+  fetcher: () => Promise<{ data: T | null; error: unknown }>,
+  dependencies: unknown[] = []
 ) => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -212,7 +212,7 @@ export const useOptimizedData = <T>(
     } finally {
       setLoading(false);
     }
-  }, [key, fetcher, ...dependencies]);
+  }, [key, fetcher, ...(dependencies as readonly unknown[])]);
 
   useEffect(() => {
     fetchData();
@@ -225,12 +225,12 @@ export const useOptimizedData = <T>(
  * Debounced fetch hook for search/filter operations
  */
 export const useDebouncedFetch = <T>(
-  fetcher: (query: string) => Promise<{ data: T | null; error: any }>,
+  fetcher: (query: string) => Promise<{ data: T | null; error: unknown }>,
   delay: number = 300
 ) => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
