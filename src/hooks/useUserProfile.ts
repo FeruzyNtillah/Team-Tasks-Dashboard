@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase.client';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -29,6 +29,32 @@ interface UserProfile {
  * const { profile, loading, error, avatarUrl } = useUserProfile();
  * ```
  */
+
+/**
+ * Helper function to get signed URL for avatar
+ * @param path - The file path in Supabase storage
+ * @returns Promise<string | null> - Signed URL or null if error
+ */
+const getAvatarUrl = async (path: string | null): Promise<string | null> => {
+  if (!path) return null;
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .createSignedUrl(path, 60 * 60 * 24 * 365); // 1 year expiry
+
+    if (error) {
+      console.error('Error getting signed URL:', error);
+      return null;
+    }
+
+    return data.signedUrl;
+  } catch (err) {
+    console.error('Error getting avatar URL:', err);
+    return null;
+  }
+};
+
 export const useUserProfile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -37,34 +63,9 @@ export const useUserProfile = () => {
   const [error, setError] = useState<string>('');
 
   /**
-   * Helper function to get signed URL for avatar
-   * @param path - The file path in Supabase storage
-   * @returns Promise<string | null> - Signed URL or null if error
-   */
-  const getAvatarUrl = async (path: string | null): Promise<string | null> => {
-    if (!path) return null;
-
-    try {
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .createSignedUrl(path, 60 * 60 * 24 * 365); // 1 year expiry
-
-      if (error) {
-        console.error('Error getting signed URL:', error);
-        return null;
-      }
-
-      return data.signedUrl;
-    } catch (err) {
-      console.error('Error getting avatar URL:', err);
-      return null;
-    }
-  };
-
-  /**
    * Fetches user profile data from the database
    */
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!user) {
       setLoading(false);
       return;
@@ -79,7 +80,7 @@ export const useUserProfile = () => {
 
       if (error) {
         console.error('Error fetching profile:', error);
-        
+
         // If user profile doesn't exist, create one
         if (error.code === 'PGRST116') {
           console.log('User profile not found, creating one...');
@@ -93,7 +94,7 @@ export const useUserProfile = () => {
             })
             .select('*')
             .single();
-          
+
           if (createError) {
             console.error('Error creating user profile:', createError);
             setError('Failed to set up user profile');
@@ -116,7 +117,7 @@ export const useUserProfile = () => {
         }
       } else {
         setProfile(data);
-        
+
         // Get signed URL for avatar if it exists
         if (data.avatar_url) {
           const signedUrl = await getAvatarUrl(data.avatar_url);
@@ -133,11 +134,11 @@ export const useUserProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchProfile();
-  }, [user]);
+  }, [fetchProfile]);
 
   return {
     profile,

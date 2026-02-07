@@ -27,12 +27,12 @@ class DataCache {
   get<T>(key: string): T | null {
     const item = this.cache.get(key);
     if (!item) return null;
-    
+
     if (Date.now() - item.timestamp > CACHE_DURATION) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return item.data as T;
   }
 
@@ -67,11 +67,11 @@ export class OptimizedSupabaseClient {
 
     // Fetch fresh data
     const result = await fetcher();
-    
+
     if (result.data && !result.error) {
       dataCache.set(key, result.data);
     }
-    
+
     return result;
   }
 
@@ -83,7 +83,7 @@ export class OptimizedSupabaseClient {
     batchSize: number = BATCH_SIZE
   ): Promise<T[]> {
     const results: T[] = [];
-    
+
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
       const batchResults = await Promise.all(
@@ -91,7 +91,7 @@ export class OptimizedSupabaseClient {
       );
       results.push(...batchResults);
     }
-    
+
     return results;
   }
 
@@ -163,7 +163,7 @@ export class OptimizedSupabaseClient {
   static async prefetchRelatedData(userId: string) {
     const cacheKey = `user_${userId}_related`;
     const cached = dataCache.get(cacheKey);
-    
+
     if (cached) {
       return cached;
     }
@@ -204,9 +204,9 @@ export const useOptimizedData = <T>(
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await OptimizedSupabaseClient.fetchWithCache(key, fetcher);
-      
+
       setData(result.data);
       setError(result.error);
     } catch (err) {
@@ -214,11 +214,11 @@ export const useOptimizedData = <T>(
     } finally {
       setLoading(false);
     }
-  }, [key, fetcher, depsString]);
+  }, [key, fetcher]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, depsString]);
 
   return { data, loading, error, refetch: fetchData };
 };
@@ -267,44 +267,44 @@ export class PerformanceMonitor {
 
   static startTimer(name: string): () => void {
     const start = performance.now();
-    
+
     return () => {
       const duration = performance.now() - start;
-      
+
       if (!this.metrics.has(name)) {
         this.metrics.set(name, []);
       }
-      
+
       this.metrics.get(name)!.push(duration);
-      
+
       // Keep only last 100 measurements
       const measurements = this.metrics.get(name)!;
       if (measurements.length > 100) {
         measurements.shift();
       }
-      
+
       console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
     };
   }
 
   static getAverageTime(name: string): number {
     const measurements = this.metrics.get(name) || [];
-    return measurements.length > 0 
-      ? measurements.reduce((a, b) => a + b, 0) / measurements.length 
+    return measurements.length > 0
+      ? measurements.reduce((a, b) => a + b, 0) / measurements.length
       : 0;
   }
 
   static getReport(): string {
     let report = '📊 Performance Report:\n';
-    
+
     for (const [name, measurements] of this.metrics.entries()) {
       const avg = measurements.reduce((a, b) => a + b, 0) / measurements.length;
       const min = Math.min(...measurements);
       const max = Math.max(...measurements);
-      
+
       report += `${name}: avg=${avg.toFixed(2)}ms, min=${min.toFixed(2)}ms, max=${max.toFixed(2)}ms (${measurements.length} samples)\n`;
     }
-    
+
     return report;
   }
 
