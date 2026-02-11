@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSessionManager } from '../hooks/useSessionManager';
 import { useUserProfile } from '../hooks/useUserProfile';
 import NotificationPanel from '../components/NotificationPanel';
-import techLogo from '../assets/tech.jpg';
+
 
 /**
  * Top Bar Component
@@ -79,11 +79,6 @@ const Topbar: React.FC = () => {
       <div className="flex items-center justify-between px-6 py-3 md:py-4">
         {/* Application Logo and Title */}
         <div className="flex items-center gap-3 min-w-0">
-          <img 
-            src={techLogo} 
-            alt="ImaraTech Logo" 
-            className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-cover shrink-0 shadow-sm hover:shadow-md transition-shadow duration-200"
-          />
           <h1 className="text-xl md:text-2xl font-bold bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent hidden sm:block">ImaraTech</h1>
         </div>
         
