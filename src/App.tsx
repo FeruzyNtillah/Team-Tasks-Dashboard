@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { NotificationProvider } from './contexts/NotificationContext';
+import { AuthProvider } from './contexts/AuthProvider';
+import { NotificationProvider } from './contexts/NotificationProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './layout/Layout';
 import Home from './pages/Home';
@@ -35,7 +35,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            
+
             {/* Protected routes with main layout */}
             <Route path="/" element={
               <ProtectedRoute>
