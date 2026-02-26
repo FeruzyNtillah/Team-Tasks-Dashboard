@@ -5,7 +5,8 @@
  * Components in this directory should be presentational and reusable.
  */
 
-export { Button, buttonVariants } from './button'
+export { Button } from './button'
+export { buttonVariants } from './buttonVariants'
 export type { ButtonProps } from './button'
 
 export { Input } from './input'
