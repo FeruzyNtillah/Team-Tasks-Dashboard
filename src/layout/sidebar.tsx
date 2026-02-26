@@ -99,7 +99,7 @@ const Sidebar: React.FC = () => {
 
       {/* Footer spacer */}
       <div className="shrink-0 p-4 border-t border-slate-200/50 bg-slate-50/50">
-        <p className="text-xs text-slate-400 text-center font-medium">ImaraTech © 2024</p>
+        <p className="text-xs text-slate-400 text-center font-medium">ImaraTech © 2026</p>
       </div>
     </aside>
   );
