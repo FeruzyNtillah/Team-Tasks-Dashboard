@@ -27,7 +27,7 @@ const Layout: React.FC = () => {
   useSessionManager();
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-purple-50 to-pink-50 flex flex-col">
       {/* Top navigation bar with user menu and notifications */}
       <TopBar />
       
@@ -37,7 +37,7 @@ const Layout: React.FC = () => {
         <Sidebar />
         
         {/* Main content area where pages are rendered */}
-        <main className="flex-1 overflow-auto bg-linear-to-br from-slate-50 to-slate-100">
+        <main className="flex-1 overflow-auto bg-linear-to-br from-slate-50 via-cyan-50 to-slate-100">
           <div className="p-6 md:p-8 h-full">
             <div className="max-w-7xl mx-auto">
               <Outlet />

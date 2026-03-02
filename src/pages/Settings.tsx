@@ -50,8 +50,8 @@ const Settings: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800">Settings</h2>
-          <p className="text-gray-500 mt-1">Manage your account preferences</p>
+          <h2 className="gradient-text-vibrant text-3xl font-bold">Settings</h2>
+          <p className="text-slate-500 mt-1">Manage your account preferences</p>
         </div>
       </div>
 
@@ -59,22 +59,24 @@ const Settings: React.FC = () => {
         {/* Main Settings */}
         <div className="lg:col-span-2 space-y-6">
           {/* Profile Settings */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-linear-to-br from-white to-cyan-50 rounded-lg shadow-md border border-cyan-200">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-6">
-                <User className="w-6 h-6 text-blue-600" />
-                <h3 className="text-xl font-semibold text-gray-800">Profile Settings</h3>
+                <div className="p-2 bg-cyan-100 rounded-lg">
+                  <User className="w-6 h-6 text-cyan-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800">Profile Settings</h3>
               </div>
               
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
                     Email
                   </label>
                   <input
                     id="email"
                     type="email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-cyan-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     defaultValue={user?.email || ''}
                     placeholder="Enter your email"
                     readOnly
@@ -85,23 +87,25 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Notification Settings */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-linear-to-br from-white to-amber-50 rounded-lg shadow-md border border-amber-200">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-6">
-                <Bell className="w-6 h-6 text-yellow-600" />
-                <h3 className="text-xl font-semibold text-gray-800">Notifications</h3>
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <Bell className="w-6 h-6 text-amber-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800">Notifications</h3>
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-amber-100 rounded-lg border border-amber-200">
                   <div>
-                    <p className="font-medium text-gray-700">Email Notifications</p>
-                    <p className="text-sm text-gray-500">Receive updates via email</p>
+                    <p className="font-medium text-slate-700">Email Notifications</p>
+                    <p className="text-sm text-slate-500">Receive updates via email</p>
                   </div>
                   <button
                     onClick={() => handleSettingChange('emailNotifications', !settings.emailNotifications)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.emailNotifications ? 'bg-yellow-600' : 'bg-gray-200'
+                      settings.emailNotifications ? 'bg-amber-600' : 'bg-slate-300'
                     }`}
                     aria-label="Toggle email notifications"
                   >
@@ -111,15 +115,15 @@ const Settings: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-violet-100 rounded-lg border border-violet-200">
                   <div>
-                    <p className="font-medium text-gray-700">Push Notifications</p>
-                    <p className="text-sm text-gray-500">Browser push notifications</p>
+                    <p className="font-medium text-slate-700">Push Notifications</p>
+                    <p className="text-sm text-slate-500">Browser push notifications</p>
                   </div>
                   <button
                     onClick={() => handleSettingChange('pushNotifications', !settings.pushNotifications)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      settings.pushNotifications ? 'bg-blue-600' : 'bg-gray-200'
+                      settings.pushNotifications ? 'bg-violet-600' : 'bg-slate-300'
                     }`}
                     aria-label="Toggle push notifications"
                   >
@@ -133,18 +137,20 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Appearance Settings */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-linear-to-br from-white to-slate-50 rounded-lg shadow-md border border-slate-200">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-6">
-                <SettingsIcon className="w-6 h-6 text-gray-600" />
-                <h3 className="text-xl font-semibold text-gray-800">Appearance</h3>
+                <div className="p-2 bg-slate-100 rounded-lg">
+                  <SettingsIcon className="w-6 h-6 text-slate-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800">Appearance</h3>
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-100 rounded-lg border border-slate-200">
                   <div>
-                    <p className="font-medium text-gray-700">Dark Mode</p>
-                    <p className="text-sm text-gray-500">Use dark theme</p>
+                    <p className="font-medium text-slate-700">Dark Mode</p>
+                    <p className="text-sm text-slate-500">Use dark theme</p>
                   </div>
                   <button
                     onClick={() => handleSettingChange('darkMode', !settings.darkMode)}
@@ -166,21 +172,23 @@ const Settings: React.FC = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Account Info */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-linear-to-br from-white to-emerald-50 rounded-lg shadow-md border border-emerald-200">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-4">
-                <Shield className="w-5 h-5 text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-800">Account</h3>
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <Shield className="w-5 h-5 text-emerald-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-800">Account</h3>
               </div>
               
               <div className="space-y-3">
                 <div className="text-sm">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="ml-2 font-medium text-green-600">Active</span>
+                  <span className="text-slate-600">Status:</span>
+                  <span className="ml-2 font-medium text-emerald-600">Active</span>
                 </div>
                 <div className="text-sm">
-                  <span className="text-gray-600">Member since:</span>
-                  <span className="ml-2 font-medium text-gray-800">2024</span>
+                  <span className="text-slate-600">Member since:</span>
+                  <span className="ml-2 font-medium text-slate-800">2024</span>
                 </div>
               </div>
             </div>
@@ -190,7 +198,7 @@ const Settings: React.FC = () => {
           <button
             onClick={saveSettings}
             disabled={saving}
-            className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="w-full bg-linear-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-medium shadow-md hover:shadow-lg"
           >
             {saving ? (
               <>

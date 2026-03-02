@@ -123,7 +123,7 @@ const Projects: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Projects</h2>
+          <h2 className="gradient-text-vibrant text-3xl md:text-4xl font-bold">Projects</h2>
           <p className="text-slate-500 mt-1 font-medium">Manage and track all your projects</p>
         </div>
         {canCreateProject && (
@@ -133,7 +133,7 @@ const Projects: React.FC = () => {
               setFormData({ name: '', description: '', status: 'active' });
               setShowCreateModal(true);
             }}
-            className="btn-primary"
+            className="btn-primary bg-linear-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
           >
             <Plus className="w-5 h-5" />
             <span>Create Project</span>
@@ -161,16 +161,16 @@ const Projects: React.FC = () => {
 
       {/* Projects Data Table */}
       {!projectsLoading && (
-        <div className="card-section overflow-hidden">
+        <div className="card-section overflow-hidden bg-linear-to-br from-white to-slate-50">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-linear-to-r from-slate-100 to-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="table-header">Name</th>
-                  <th className="table-header">Description</th>
-                  <th className="table-header">Status</th>
-                  <th className="table-header">Created At</th>
-                  <th className="table-header">Actions</th>
+                  <th className="table-header bg-transparent">Name</th>
+                  <th className="table-header bg-transparent">Description</th>
+                  <th className="table-header bg-transparent">Status</th>
+                  <th className="table-header bg-transparent">Created At</th>
+                  <th className="table-header bg-transparent">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -185,53 +185,58 @@ const Projects: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  projects.map((project) => (
-                    <tr key={project.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="table-cell font-semibold text-slate-900">{project.name}</td>
-                      <td className="table-cell text-slate-600 max-w-xs truncate">{project.description}</td>
-                      <td className="table-cell">
-                        <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                          project.status === 'active' ? 'badge-success' :
-                          project.status === 'completed' ? 'badge-info' :
-                          'badge-neutral'
-                        }`}>
-                          {project.status}
-                        </span>
-                      </td>
-                      <td className="table-cell text-sm text-slate-500">
-                        {new Date(project.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
-                      </td>
-                      <td className="table-cell">
-                        <div className="flex items-center gap-2">
-                          <Link 
-                            to={`/projects/${project.id}`}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="View Project"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Link>
-                          {canEditProject() && (
-                            <button
-                              onClick={() => handleEditProject(project)}
-                              className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                              title="Edit Project"
+                  projects.map((project, index) => {
+                    const colors = ['bg-blue-50', 'bg-violet-50', 'bg-emerald-50', 'bg-cyan-50', 'bg-pink-50', 'bg-amber-50'];
+                    const bgColor = colors[index % colors.length];
+                    
+                    return (
+                      <tr key={project.id} className={`${bgColor} hover:bg-opacity-70 transition-colors`}>
+                        <td className="table-cell font-semibold text-slate-900">{project.name}</td>
+                        <td className="table-cell text-slate-600 max-w-xs truncate">{project.description}</td>
+                        <td className="table-cell">
+                          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                            project.status === 'active' ? 'badge-emerald' :
+                            project.status === 'completed' ? 'badge-teal' :
+                            'badge-neutral'
+                          }`}>
+                            {project.status}
+                          </span>
+                        </td>
+                        <td className="table-cell text-sm text-slate-500">
+                          {new Date(project.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                        </td>
+                        <td className="table-cell">
+                          <div className="flex items-center gap-2">
+                            <Link 
+                              to={`/projects/${project.id}`}
+                              className="p-2 text-cyan-600 hover:bg-cyan-100 rounded-lg transition-colors"
+                              title="View Project"
                             >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                          )}
-                          {canDeleteProject() && (
-                            <button
-                              onClick={() => handleDeleteProject(project.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete Project"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                              <Eye className="w-4 h-4" />
+                            </Link>
+                            {canEditProject() && (
+                              <button
+                                onClick={() => handleEditProject(project)}
+                                className="p-2 text-violet-600 hover:bg-violet-100 rounded-lg transition-colors"
+                                title="Edit Project"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                            )}
+                            {canDeleteProject() && (
+                              <button
+                                onClick={() => handleDeleteProject(project.id)}
+                                className="p-2 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors"
+                                title="Delete Project"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

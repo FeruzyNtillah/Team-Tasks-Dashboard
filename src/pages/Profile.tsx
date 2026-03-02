@@ -258,11 +258,11 @@ const Profile: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-gray-800">Profile</h2>
+        <h2 className="gradient-text-vibrant text-3xl font-bold">Profile</h2>
         {!editing && (
           <button
             onClick={() => setEditing(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-linear-to-r from-violet-600 to-pink-600 text-white rounded-md hover:from-violet-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-violet-500"
           >
             Edit Profile
           </button>

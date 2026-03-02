@@ -71,27 +71,27 @@ const Tasks: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'review': return 'bg-purple-100 text-purple-800';
-      case 'todo': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-emerald-100 text-emerald-800';
+      case 'in_progress': return 'bg-violet-100 text-violet-800';
+      case 'review': return 'bg-cyan-100 text-cyan-800';
+      case 'todo': return 'bg-slate-100 text-slate-800';
+      default: return 'bg-slate-100 text-slate-800';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'high': return 'bg-rose-100 text-rose-800';
+      case 'medium': return 'bg-amber-100 text-amber-800';
+      case 'low': return 'bg-lime-100 text-lime-800';
+      default: return 'bg-slate-100 text-slate-800';
     }
   };
 
   const getSubmissionStatusColor = (status?: string) => {
     switch (status) {
-      case 'on_time': return 'bg-green-100 text-green-800';
-      case 'late': return 'bg-red-100 text-red-800';
+      case 'on_time': return 'bg-emerald-100 text-emerald-800';
+      case 'late': return 'bg-rose-100 text-rose-800';
       default: return 'bg-slate-100 text-slate-600'; // Pending
     }
   };
@@ -261,13 +261,13 @@ const Tasks: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Tasks</h2>
+          <h2 className="gradient-text-vibrant text-3xl md:text-4xl font-bold">Tasks</h2>
           <p className="text-slate-500 mt-1 font-medium">Track and manage your team's work</p>
         </div>
         {canCreateTask && (
           <button
             onClick={() => handleOpenModal()}
-            className="btn-primary"
+            className="btn-primary bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
           >
             <Plus className="w-5 h-5" />
             <span>Add Task</span>
@@ -295,7 +295,7 @@ const Tasks: React.FC = () => {
 
       {/* Search and Filters */}
       {!tasksLoading && !dataLoading && (
-        <div className="card-section">
+        <div className="card-section bg-linear-to-br from-white to-slate-50">
           <div className="flex flex-col lg:flex-row gap-4 p-4">
             <div className="flex-1">
               <div className="relative">
@@ -305,7 +305,7 @@ const Tasks: React.FC = () => {
                   placeholder="Search tasks by title or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 border-cyan-200 focus:ring-cyan-500"
                 />
               </div>
             </div>
@@ -315,7 +315,7 @@ const Tasks: React.FC = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 aria-label="Filter by status"
-                className="input-field"
+                className="input-field border-violet-200 focus:ring-violet-500"
               >
                 <option value="all">All Status</option>
                 <option value="todo">To Do</option>
@@ -328,7 +328,7 @@ const Tasks: React.FC = () => {
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
                 aria-label="Filter by priority"
-                className="input-field"
+                className="input-field border-amber-200 focus:ring-amber-500"
               >
                 <option value="all">All Priority</option>
                 <option value="urgent">Urgent</option>
@@ -343,18 +343,18 @@ const Tasks: React.FC = () => {
 
       {/* Tasks Data Table */}
       {!tasksLoading && (
-        <div className="card-section overflow-hidden">
+        <div className="card-section overflow-hidden bg-linear-to-br from-white to-slate-50">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-linear-to-r from-slate-100 via-blue-50 to-slate-100 border-b border-slate-200">
                 <tr>
-                  <th className="table-header">Title</th>
-                  <th className="table-header">Status</th>
-                  <th className="table-header">Priority</th>
-                  <th className="table-header">Assigned To</th>
-                  <th className="table-header">Due Date</th>
-                  <th className="table-header">Submission</th>
-                  <th className="table-header">Actions</th>
+                  <th className="table-header bg-transparent">Title</th>
+                  <th className="table-header bg-transparent">Status</th>
+                  <th className="table-header bg-transparent">Priority</th>
+                  <th className="table-header bg-transparent">Assigned To</th>
+                  <th className="table-header bg-transparent">Due Date</th>
+                  <th className="table-header bg-transparent">Submission</th>
+                  <th className="table-header bg-transparent">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -369,81 +369,86 @@ const Tasks: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredTasks.map((filteredTask) => (
-                    <tr key={filteredTask.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="table-cell font-semibold">
-                        <div className="text-slate-900">{filteredTask.title}</div>
-                        {filteredTask.description && <div className="text-xs text-slate-500 mt-0.5">{filteredTask.description.substring(0, 60)}...</div>}
-                      </td>
-                      <td className="table-cell">
-                        <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusColor(filteredTask.status)}`}>
-                          {filteredTask.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="table-cell">
-                        <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getPriorityColor(filteredTask.priority)}`}>
-                          {filteredTask.priority}
-                        </span>
-                      </td>
-                      <td className="table-cell text-sm text-slate-900">
-                        <div className="flex items-center gap-1">
-                          <User className="w-4 h-4 text-slate-400" />
-                          {getUserName(filteredTask.assigned_to)}
-                        </div>
-                      </td>
-                      <td className="table-cell text-sm text-slate-900">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4 text-slate-400" />
-                          {filteredTask.due_date ? new Date(filteredTask.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date'}
-                        </div>
-                      </td>
-                      <td className="table-cell text-sm">
-                        <div className="flex flex-col gap-1">
-                          <span className={`inline-flex w-fit px-2 py-0.5 text-xs font-medium rounded ${getSubmissionStatusColor(filteredTask.submission_status)}`}>
-                            {filteredTask.submission_status ? filteredTask.submission_status.replace('_', ' ') : 'pending'}
+                  filteredTasks.map((filteredTask, index) => {
+                    const colors = ['bg-blue-50', 'bg-violet-50', 'bg-emerald-50', 'bg-cyan-50', 'bg-pink-50', 'bg-amber-50', 'bg-rose-50'];
+                    const bgColor = colors[index % colors.length];
+                    
+                    return (
+                      <tr key={filteredTask.id} className={`${bgColor} hover:bg-opacity-70 transition-colors`}>
+                        <td className="table-cell font-semibold">
+                          <div className="text-slate-900">{filteredTask.title}</div>
+                          {filteredTask.description && <div className="text-xs text-slate-500 mt-0.5">{filteredTask.description.substring(0, 60)}...</div>}
+                        </td>
+                        <td className="table-cell">
+                          <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusColor(filteredTask.status)}`}>
+                            {filteredTask.status.replace('_', ' ')}
                           </span>
-                          {filteredTask.submission_status === 'late' && filteredTask.days_overdue && (
-                            <span className="text-[10px] text-red-600 font-medium">
-                              {filteredTask.days_overdue} days overdue
+                        </td>
+                        <td className="table-cell">
+                          <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${getPriorityColor(filteredTask.priority)}`}>
+                            {filteredTask.priority}
+                          </span>
+                        </td>
+                        <td className="table-cell text-sm text-slate-900">
+                          <div className="flex items-center gap-1">
+                            <User className="w-4 h-4 text-slate-400" />
+                            {getUserName(filteredTask.assigned_to)}
+                          </div>
+                        </td>
+                        <td className="table-cell text-sm text-slate-900">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4 text-slate-400" />
+                            {filteredTask.due_date ? new Date(filteredTask.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date'}
+                          </div>
+                        </td>
+                        <td className="table-cell text-sm">
+                          <div className="flex flex-col gap-1">
+                            <span className={`inline-flex w-fit px-2 py-0.5 text-xs font-medium rounded ${getSubmissionStatusColor(filteredTask.submission_status)}`}>
+                              {filteredTask.submission_status ? filteredTask.submission_status.replace('_', ' ') : 'pending'}
                             </span>
-                          )}
-                          {filteredTask.attachment_url && (
-                            <a
-                              href={filteredTask.attachment_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-0.5 mt-0.5"
-                            >
-                              <Paperclip className="w-3 h-3" />
-                              View Report
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                      <td className="table-cell">
-                        <div className="flex items-center gap-2">
-                          {canEditTask(filteredTask) && (
-                            <button
-                              onClick={() => handleOpenModal(filteredTask)}
-                              className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                              title="Edit Task"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                          )}
-                          {canDeleteTask() && (
-                            <button
-                              onClick={() => handleDelete(filteredTask.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete Task"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            {filteredTask.submission_status === 'late' && filteredTask.days_overdue && (
+                              <span className="text-[10px] text-rose-600 font-medium">
+                                {filteredTask.days_overdue} days overdue
+                              </span>
+                            )}
+                            {filteredTask.attachment_url && (
+                              <a
+                                href={filteredTask.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-cyan-600 hover:text-cyan-800 flex items-center gap-0.5 mt-0.5"
+                              >
+                                <Paperclip className="w-3 h-3" />
+                                View Report
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="table-cell">
+                          <div className="flex items-center gap-2">
+                            {canEditTask(filteredTask) && (
+                              <button
+                                onClick={() => handleOpenModal(filteredTask)}
+                                className="p-2 text-violet-600 hover:bg-violet-100 rounded-lg transition-colors"
+                                title="Edit Task"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                            )}
+                            {canDeleteTask() && (
+                              <button
+                                onClick={() => handleDelete(filteredTask.id)}
+                                className="p-2 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors"
+                                title="Delete Task"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

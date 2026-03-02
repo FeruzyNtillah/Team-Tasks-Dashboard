@@ -27,6 +27,35 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+  /* Extended color palette for vibrant design */
+  --color-teal: hsl(174 83% 31%);
+  --color-teal-light: hsl(174 83% 51%);
+  --color-teal-bg: hsl(174 100% 92%);
+  --color-cyan: hsl(188 100% 50%);
+  --color-cyan-light: hsl(188 94% 60%);
+  --color-cyan-bg: hsl(188 100% 92%);
+  --color-indigo: hsl(226 55% 50%);
+  --color-indigo-light: hsl(226 70% 65%);
+  --color-indigo-bg: hsl(226 100% 93%);
+  --color-violet: hsl(264 100% 50%);
+  --color-violet-light: hsl(264 100% 60%);
+  --color-violet-bg: hsl(264 100% 92%);
+  --color-pink: hsl(330 81% 60%);
+  --color-pink-light: hsl(330 100% 71%);
+  --color-pink-bg: hsl(330 100% 91%);
+  --color-rose: hsl(0 100% 67%);
+  --color-rose-light: hsl(0 100% 75%);
+  --color-rose-bg: hsl(0 100% 91%);
+  --color-amber: hsl(38 92% 50%);
+  --color-amber-light: hsl(38 96% 60%);
+  --color-amber-bg: hsl(38 100% 91%);
+  --color-lime: hsl(82 65% 59%);
+  --color-lime-light: hsl(82 84% 70%);
+  --color-lime-bg: hsl(82 100% 90%);
+  --color-emerald: hsl(160 84% 39%);
+  --color-emerald-light: hsl(160 84% 59%);
+  --color-emerald-bg: hsl(160 100% 91%);
 }
 
 :root {
@@ -75,7 +104,14 @@
 }
 
 /* Utilities */
-img, svg, video, canvas, audio, iframe, embed, object {
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
   vertical-align: initial;
 }
 
@@ -148,6 +184,214 @@ img, svg, video, canvas, audio, iframe, embed, object {
   .badge-neutral {
     @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800;
   }
+
+  /* Extended colorful badges */
+  .badge-teal {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800;
+  }
+
+  .badge-cyan {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800;
+  }
+
+  .badge-violet {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800;
+  }
+
+  .badge-pink {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800;
+  }
+
+  .badge-amber {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+  }
+
+  .badge-lime {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-lime-100 text-lime-800;
+  }
+
+  .badge-emerald {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800;
+  }
+
+  .badge-indigo {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800;
+  }
+
+  /* Gradient text utilities */
+  .gradient-text-primary {
+    @apply bg-linear-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-vibrant {
+    @apply bg-linear-to-r from-violet-600 via-pink-600 to-rose-600 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-nature {
+    @apply bg-linear-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-warm {
+    @apply bg-linear-to-r from-amber-600 to-rose-600 bg-clip-text text-transparent;
+  }
+
+  /* Gradient backgrounds */
+  .gradient-bg-primary {
+    @apply bg-linear-to-br from-blue-50 to-cyan-50;
+  }
+
+  .gradient-bg-vibrant {
+    @apply bg-linear-to-br from-violet-50 via-pink-50 to-rose-50;
+  }
+
+  .gradient-bg-nature {
+    @apply bg-linear-to-br from-emerald-50 to-teal-50;
+  }
+
+  .gradient-bg-warm {
+    @apply bg-linear-to-br from-amber-50 to-orange-50;
+  }
+
+  .gradient-bg-cool {
+    @apply bg-linear-to-br from-cyan-50 to-indigo-50;
+  }
+
+  /* Colorful stat cards */
+  .stat-card-blue {
+    @apply bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 hover:border-blue-300;
+  }
+
+  .stat-card-cyan {
+    @apply bg-linear-to-br from-cyan-50 to-cyan-100 border border-cyan-200 hover:border-cyan-300;
+  }
+
+  .stat-card-teal {
+    @apply bg-linear-to-br from-teal-50 to-teal-100 border border-teal-200 hover:border-teal-300;
+  }
+
+  .stat-card-violet {
+    @apply bg-linear-to-br from-violet-50 to-violet-100 border border-violet-200 hover:border-violet-300;
+  }
+
+  .stat-card-pink {
+    @apply bg-linear-to-br from-pink-50 to-pink-100 border border-pink-200 hover:border-pink-300;
+  }
+
+  .stat-card-emerald {
+    @apply bg-linear-to-br from-emerald-50 to-emerald-100 border border-emerald-200 hover:border-emerald-300;
+  }
+
+  .stat-card-amber {
+    @apply bg-linear-to-br from-amber-50 to-amber-100 border border-amber-200 hover:border-amber-300;
+  }
+
+  .stat-card-rose {
+    @apply bg-linear-to-br from-rose-50 to-rose-100 border border-rose-200 hover:border-rose-300;
+  }
+
+  /* Icon background circles */
+  .icon-wrapper-blue {
+    @apply p-3 bg-blue-100 rounded-lg inline-flex;
+  }
+
+  .icon-wrapper-cyan {
+    @apply p-3 bg-cyan-100 rounded-lg inline-flex;
+  }
+
+  .icon-wrapper-teal {
+    @apply p-3 bg-teal-100 rounded-lg inline-flex;
+  }
+
+  .icon-wrapper-violet {
+    @apply p-3 bg-violet-100 rounded-lg inline-flex;
+  }
+
+  .icon-wrapper-pink {
+    @apply p-3 bg-pink-100 rounded-lg inline-flex;
+  }
+
+  .icon-wrapper-emerald {
+    @apply p-3 bg-emerald-100 rounded-lg inline-flex;
+  }
+
+  .icon-wrapper-amber {
+    @apply p-3 bg-amber-100 rounded-lg inline-flex;
+  }
+
+  .icon-wrapper-rose {
+    @apply p-3 bg-rose-100 rounded-lg inline-flex;
+  }
+
+  /* Icon color utilities */
+  .icon-blue {
+    @apply text-blue-600;
+  }
+
+  .icon-cyan {
+    @apply text-cyan-600;
+  }
+
+  .icon-teal {
+    @apply text-teal-600;
+  }
+
+  .icon-violet {
+    @apply text-violet-600;
+  }
+
+  .icon-pink {
+    @apply text-pink-600;
+  }
+
+  .icon-emerald {
+    @apply text-emerald-600;
+  }
+
+  .icon-amber {
+    @apply text-amber-600;
+  }
+
+  .icon-rose {
+    @apply text-rose-600;
+  }
+
+  /* Project card gradients */
+  .project-card-gradient-1 {
+    @apply bg-linear-to-br from-blue-500 to-cyan-500;
+  }
+
+  .project-card-gradient-2 {
+    @apply bg-linear-to-br from-violet-500 to-pink-500;
+  }
+
+  .project-card-gradient-3 {
+    @apply bg-linear-to-br from-emerald-500 to-teal-500;
+  }
+
+  .project-card-gradient-4 {
+    @apply bg-linear-to-br from-amber-500 to-orange-500;
+  }
+
+  .project-card-gradient-5 {
+    @apply bg-linear-to-br from-rose-500 to-pink-500;
+  }
+
+  .project-card-gradient-6 {
+    @apply bg-linear-to-br from-indigo-500 to-purple-500;
+  }
+
+  /* Text color utilities */
+  .text-primary-600 {
+    @apply text-blue-600;
+  }
+
+  .text-secondary-600 {
+    @apply text-cyan-600;
+  }
+
+  .text-accent-600 {
+    @apply text-violet-600;
+  }
 }
 
 .progress-bar {
@@ -157,7 +401,8 @@ img, svg, video, canvas, audio, iframe, embed, object {
 
 /* Authentication Background Animations */
 @keyframes gradient-xy {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
