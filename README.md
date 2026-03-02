@@ -25,7 +25,7 @@ A modern React-based task management application built with TypeScript, Vite, an
 
 ## Project Structure
 
-```
+```text
 team-tasks-dashboard/
 ├── public/                 # Static assets
 ├── src/
@@ -85,12 +85,14 @@ team-tasks-dashboard/
 ### Installation
 
 1. Clone the repository
+
    ```bash
    git clone https://github.com/FeruzyNtillah/Team-Tasks-Dashboard.git
    cd Team-Tasks-Dashboard
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -140,18 +142,21 @@ npm run lint
 ## Key Components
 
 ### Authentication System
+
 - User registration and login
 - Email verification
 - Password reset
 - Session management
 
 ### Data Management
+
 - Optimized Supabase client with caching
 - Batch processing for large datasets
 - Real-time data synchronization
 - Performance monitoring
 
 ### UI Components
+
 - Responsive design with Tailwind CSS
 - Modern component architecture
 - Accessibility features
